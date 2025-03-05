@@ -38,6 +38,27 @@ stages:
               script: |
                 New-Item -Path $(Build.SourcesDirectory) -Name Temp -ItemType Directory -Force
 
+          # - task: PowerShell@2
+          #   displayName: Run PSRule
+          #   inputs:
+          #     targetType: "inline"
+          #     errorActionPreference: continue
+          #     script: |
+          #       Import-Module PSRule.Monitor
+          #       Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
+          #       Export-AzDevOpsOrganizationRuleData -OutputPath .\Temp -ErrorAction Continue
+
+          #       # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
+
+          #       $result = Invoke-PSRule `
+          #         -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
+          #         -InputPath '$(Build.SourcesDirectory)/Temp/' `
+          #         -Format Detect `
+          #         -Culture en
+          #       $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+          #   env:
+          #     PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
+
           - task: PowerShell@2
             displayName: Run PSRule
             inputs:
@@ -46,15 +67,46 @@ stages:
               script: |
                 Import-Module PSRule.Monitor
                 Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
-                Export-AzDevOpsOrganizationRuleData -OutputPath .\Temp -ErrorAction Continue
+                # Export-AzDevOpsOrganizationRuleData -OutputPath .\Temp -ErrorAction Continue
 
                 # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
 
-                $result = Invoke-PSRule `
-                  -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-                  -InputPath '$(Build.SourcesDirectory)/Temp/' `
-                  -Format Detect `
-                  -Culture en
-                $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+                $projects = @(
+                    "ssc-sep", "pmo-deg", "pmo-gdh", "ssc-sde", "ssc-vdi", "pmo-nza",
+                    "ssc-mss", "ssc-hlz", "mgt-nps", "pmo-dct", "ssc-plz",
+                    "ssc-obp", "pmo-uwb", "ssc-tlz", "ssc-mlz", "ssc-sst", "pmo-ssc",
+                    "ssc-set", "ssc-alz", "ssc-aia", "plt-sep", "ssc-adi", "plt-exp",
+                    "pmo-uwv", "ssc-dac", "ssc-mco"
+                )
+
+                # Run in parallel
+                $projects | ForEach-Object -Parallel {
+
+                    Connect-AzDevOps `
+                        -Organization "tcsnlps" `
+                        -PAT $env:azdoDevopsAssessmentLocalToken
+                    
+                    $project = $_
+                    $outputFolder = ".\Temp\$($project)"
+
+                    if (-not (Test-Path $outputFolder)) {
+                        New-Item -ItemType Directory -Path $outputFolder | Out-Null
+                    }
+
+                    $outputFile = Join-Path $outputFolder "$project.json"
+                    Write-Host "Exporting rules for $project to $outputFile"
+
+                    Export-AzDevOpsRuleData -Project $project -OutputPath $outputFolder
+
+
+                    $result = Invoke-PSRule `
+                        -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
+                        -InputPath '$(Build.SourcesDirectory)/Temp/' `
+                        -Format Detect `
+                        -Culture en
+                    $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+
+
+                }  -ThrottleLimit 5
             env:
               PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
