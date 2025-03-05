@@ -1,18 +1,18 @@
 name: PSRule-ADO
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
 variables:
   # Set to your variable group containing variables
-  - group: 'azdo-psrule-run'
+  - group: "azdo-psrule-run"
 
 schedules:
-- cron: "0 6 * * *"
-  displayName: Run every day at 6am
-  branches:
-    include:
-    - '*'
+  - cron: "0 6 * * *"
+    displayName: Run every day at 6am
+    branches:
+      include:
+        - "*"
 
 stages:
   - stage: Run
@@ -26,7 +26,7 @@ stages:
           - task: PowerShell@2
             displayName: Install PowerShell Modules
             inputs:
-              targetType: 'inline'
+              targetType: "inline"
               script: |
                 Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
                 Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
@@ -34,14 +34,15 @@ stages:
           - task: PowerShell@2
             displayName: Create temporary output directory
             inputs:
-              targetType: 'inline'
+              targetType: "inline"
               script: |
                 New-Item -Path $(Build.SourcesDirectory) -Name Temp -ItemType Directory -Force
 
           - task: PowerShell@2
             displayName: Run PSRule
             inputs:
-              targetType: 'inline'
+              targetType: "inline"
+              errorActionPreference: continue
               script: |
                 Import-Module PSRule.Monitor
                 Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
