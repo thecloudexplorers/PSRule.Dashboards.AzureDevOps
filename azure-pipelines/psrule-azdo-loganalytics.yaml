@@ -38,6 +38,33 @@ stages:
               script: |
                 New-Item -Path $(Build.SourcesDirectory) -Name Temp -ItemType Directory -Force
 
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sep -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-deg -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-gdh -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sde -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-vdi -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-nza -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mss -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-hlz -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name mgt-nps -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-dct -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-plz -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-obp -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-uwb -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-tlz -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mlz -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sst -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-ssc -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-set -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-alz -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-aia -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name plt-sep -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-adi -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name plt-exp -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-uwv -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-dac -ItemType Directory -Force
+                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mco -ItemType Directory -Force
+
           - task: PowerShell@2
             displayName: Run PSRule
             inputs:
@@ -49,33 +76,6 @@ stages:
                 # Export-AzDevOpsOrganizationRuleData -OutputPath .\Temp -ErrorAction Continue
 
                 # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
-
-                md $(Build.SourcesDirectory)\Temp\ssc-sep
-                md $(Build.SourcesDirectory)\Temp\pmo-deg
-                md $(Build.SourcesDirectory)\Temp\pmo-gdh
-                md $(Build.SourcesDirectory)\Temp\ssc-sde
-                md $(Build.SourcesDirectory)\Temp\ssc-vdi
-                md $(Build.SourcesDirectory)\Temp\pmo-nza
-                md $(Build.SourcesDirectory)\Temp\ssc-mss
-                md $(Build.SourcesDirectory)\Temp\ssc-hlz
-                md $(Build.SourcesDirectory)\Temp\mgt-nps
-                md $(Build.SourcesDirectory)\Temp\pmo-dct
-                md $(Build.SourcesDirectory)\Temp\ssc-plz
-                md $(Build.SourcesDirectory)\Temp\ssc-obp
-                md $(Build.SourcesDirectory)\Temp\pmo-uwb
-                md $(Build.SourcesDirectory)\Temp\ssc-tlz
-                md $(Build.SourcesDirectory)\Temp\ssc-mlz
-                md $(Build.SourcesDirectory)\Temp\ssc-sst
-                md $(Build.SourcesDirectory)\Temp\pmo-ssc
-                md $(Build.SourcesDirectory)\Temp\ssc-set
-                md $(Build.SourcesDirectory)\Temp\ssc-alz
-                md $(Build.SourcesDirectory)\Temp\ssc-aia
-                md $(Build.SourcesDirectory)\Temp\plt-sep
-                md $(Build.SourcesDirectory)\Temp\ssc-adi
-                md $(Build.SourcesDirectory)\Temp\plt-exp
-                md $(Build.SourcesDirectory)\Temp\pmo-uwv
-                md $(Build.SourcesDirectory)\Temp\ssc-dac
-                md $(Build.SourcesDirectory)\Temp\ssc-mco
 
                 Export-AzDevOpsRuleData -Project "ssc-sep" -OutputPath .\Temp\ssc-sep
                 Export-AzDevOpsRuleData -Project "pmo-deg" -OutputPath .\Temp\pmo-deg
