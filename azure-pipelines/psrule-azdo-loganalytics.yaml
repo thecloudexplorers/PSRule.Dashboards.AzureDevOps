@@ -50,32 +50,32 @@ stages:
 
                 # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
 
-                md .\Temp\ssc-sep
-                md .\Temp\pmo-deg
-                md .\Temp\pmo-gdh
-                md .\Temp\ssc-sde
-                md .\Temp\ssc-vdi
-                md .\Temp\pmo-nza
-                md .\Temp\ssc-mss
-                md .\Temp\ssc-hlz
-                md .\Temp\mgt-nps
-                md .\Temp\pmo-dct
-                md .\Temp\ssc-plz
-                md .\Temp\ssc-obp
-                md .\Temp\pmo-uwb
-                md .\Temp\ssc-tlz
-                md .\Temp\ssc-mlz
-                md .\Temp\ssc-sst
-                md .\Temp\pmo-ssc
-                md .\Temp\ssc-set
-                md .\Temp\ssc-alz
-                md .\Temp\ssc-aia
-                md .\Temp\plt-sep
-                md .\Temp\ssc-adi
-                md .\Temp\plt-exp
-                md .\Temp\pmo-uwv
-                md .\Temp\ssc-dac
-                md .\Temp\ssc-mco
+                md $(Build.SourcesDirectory)\Temp\ssc-sep
+                md $(Build.SourcesDirectory)\Temp\pmo-deg
+                md $(Build.SourcesDirectory)\Temp\pmo-gdh
+                md $(Build.SourcesDirectory)\Temp\ssc-sde
+                md $(Build.SourcesDirectory)\Temp\ssc-vdi
+                md $(Build.SourcesDirectory)\Temp\pmo-nza
+                md $(Build.SourcesDirectory)\Temp\ssc-mss
+                md $(Build.SourcesDirectory)\Temp\ssc-hlz
+                md $(Build.SourcesDirectory)\Temp\mgt-nps
+                md $(Build.SourcesDirectory)\Temp\pmo-dct
+                md $(Build.SourcesDirectory)\Temp\ssc-plz
+                md $(Build.SourcesDirectory)\Temp\ssc-obp
+                md $(Build.SourcesDirectory)\Temp\pmo-uwb
+                md $(Build.SourcesDirectory)\Temp\ssc-tlz
+                md $(Build.SourcesDirectory)\Temp\ssc-mlz
+                md $(Build.SourcesDirectory)\Temp\ssc-sst
+                md $(Build.SourcesDirectory)\Temp\pmo-ssc
+                md $(Build.SourcesDirectory)\Temp\ssc-set
+                md $(Build.SourcesDirectory)\Temp\ssc-alz
+                md $(Build.SourcesDirectory)\Temp\ssc-aia
+                md $(Build.SourcesDirectory)\Temp\plt-sep
+                md $(Build.SourcesDirectory)\Temp\ssc-adi
+                md $(Build.SourcesDirectory)\Temp\plt-exp
+                md $(Build.SourcesDirectory)\Temp\pmo-uwv
+                md $(Build.SourcesDirectory)\Temp\ssc-dac
+                md $(Build.SourcesDirectory)\Temp\ssc-mco
 
                 Export-AzDevOpsRuleData -Project "ssc-sep" -OutputPath .\Temp\ssc-sep
                 Export-AzDevOpsRuleData -Project "pmo-deg" -OutputPath .\Temp\pmo-deg
