@@ -125,9 +125,9 @@ stages:
                 Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
                 # Export-AzDevOpsOrganizationRuleData -OutputPath .\Temp -ErrorAction Continue
 
-                Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
+                # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
 
-                # Export-AzDevOpsRuleData -Project "ssc-sep" -OutputPath .\Temp\ssc-sep
+                Export-AzDevOpsRuleData -Project "ssc-sep" -OutputPath .\Temp\ssc-sep
                 # Export-AzDevOpsRuleData -Project "pmo-deg" -OutputPath .\Temp\pmo-deg
                 # Export-AzDevOpsRuleData -Project "pmo-gdh" -OutputPath .\Temp\pmo-gdh
                 # Export-AzDevOpsRuleData -Project "ssc-sde" -OutputPath .\Temp\ssc-sde
