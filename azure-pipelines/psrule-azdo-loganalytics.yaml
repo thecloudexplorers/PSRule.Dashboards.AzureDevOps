@@ -28,12 +28,48 @@ stages:
           - checkout: self
             clean: true
 
-          - powershell: |
-              $patToken = "$(AZDO-PAT)" | ConvertTo-SecureString -AsPlainText -Force
-              $myCredentialsObject = New-Object System.Management.Automation.PSCredential("$(patUser)", $patToken)   
+          # - powershell: |
+          #     $patToken = "$(AZDO-PAT)" | ConvertTo-SecureString -AsPlainText -Force
+          #     $myCredentialsObject = New-Object System.Management.Automation.PSCredential("$(patUser)", $patToken)
 
-              # Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/$(AZDO-ORGANIZATION)/$(project)/_packaging/$(publishFeed)/nuget/v3" -PublishLocation "https://pkgs.dev.azure.com/$(AZDO-ORGANIZATION)/$(project)/_packaging/$(publishFeed)/nuget/v3" -InstallationPolicy Trusted -Credential $myCredentialsObject
-              Register-PSRepository -Name "TCSNLPSUpstream" -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3" -InstallationPolicy Trusted -Credential $myCredentialsObject
+          #     # Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/$(AZDO-ORGANIZATION)/$(project)/_packaging/$(publishFeed)/nuget/v3" -PublishLocation "https://pkgs.dev.azure.com/$(AZDO-ORGANIZATION)/$(project)/_packaging/$(publishFeed)/nuget/v3" -InstallationPolicy Trusted -Credential $myCredentialsObject
+          #     Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3" -InstallationPolicy Trusted -Credential $myCredentialsObject
+          #     Register-PackageSource -Name "PSGalleryUpstream" -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential #6
+
+          #     $token = "$(AZDO-PAT)" | ConvertTo-SecureString -AsPlainText -Force #2
+          #     $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token) #3
+
+          #     $sourceName = "MyFeed" #4
+          #     $feedLocation = "https://pkgs.dev.azure.com/ochzhen/_packaging/myfeed/nuget/v2" #5
+
+          #     Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential #6
+
+          #     $moduleName = "MyPowerShellModule" #7
+
+          #     Install-Module -Name $moduleName -Repository $sourceName -Force -Credential $credential #8
+          #   env:
+          #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+          - task: PowerShell@2
+            inputs:
+              targetType: "inline"
+              script: |
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+                $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
+                $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token)
+
+                $sourceName = "PSGalleryUpstream"
+                $feedLocation = "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3"
+
+                Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
+
+                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
+
+              failOnStderr: true
+              pwsh: true
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken) #10
 
           - task: PowerShell@2
             displayName: Install PowerShell Modules
