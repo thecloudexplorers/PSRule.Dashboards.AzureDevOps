@@ -125,34 +125,34 @@ stages:
                 Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
                 # Export-AzDevOpsOrganizationRuleData -OutputPath .\Temp -ErrorAction Continue
 
-                # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
+                Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
 
-                Export-AzDevOpsRuleData -Project "ssc-sep" -OutputPath .\Temp\ssc-sep
-                Export-AzDevOpsRuleData -Project "pmo-deg" -OutputPath .\Temp\pmo-deg
-                Export-AzDevOpsRuleData -Project "pmo-gdh" -OutputPath .\Temp\pmo-gdh
-                Export-AzDevOpsRuleData -Project "ssc-sde" -OutputPath .\Temp\ssc-sde
-                Export-AzDevOpsRuleData -Project "ssc-vdi" -OutputPath .\Temp\ssc-vdi
-                Export-AzDevOpsRuleData -Project "pmo-nza" -OutputPath .\Temp\pmo-nza
-                Export-AzDevOpsRuleData -Project "ssc-mss" -OutputPath .\Temp\ssc-mss
-                Export-AzDevOpsRuleData -Project "ssc-hlz" -OutputPath .\Temp\ssc-hlz
-                Export-AzDevOpsRuleData -Project "mgt-nps" -OutputPath .\Temp\mgt-nps
-                Export-AzDevOpsRuleData -Project "pmo-dct" -OutputPath .\Temp\pmo-dct
-                Export-AzDevOpsRuleData -Project "ssc-plz" -OutputPath .\Temp\ssc-plz
-                Export-AzDevOpsRuleData -Project "ssc-obp" -OutputPath .\Temp\ssc-obp
-                Export-AzDevOpsRuleData -Project "pmo-uwb" -OutputPath .\Temp\pmo-uwb
-                Export-AzDevOpsRuleData -Project "ssc-tlz" -OutputPath .\Temp\ssc-tlz
-                Export-AzDevOpsRuleData -Project "ssc-mlz" -OutputPath .\Temp\ssc-mlz
-                Export-AzDevOpsRuleData -Project "ssc-sst" -OutputPath .\Temp\ssc-sst
-                Export-AzDevOpsRuleData -Project "pmo-ssc" -OutputPath .\Temp\pmo-ssc
-                Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp\ssc-set
-                Export-AzDevOpsRuleData -Project "ssc-alz" -OutputPath .\Temp\ssc-alz
-                Export-AzDevOpsRuleData -Project "ssc-aia" -OutputPath .\Temp\ssc-aia
-                Export-AzDevOpsRuleData -Project "plt-sep" -OutputPath .\Temp\plt-sep
-                Export-AzDevOpsRuleData -Project "ssc-adi" -OutputPath .\Temp\ssc-adi
-                Export-AzDevOpsRuleData -Project "plt-exp" -OutputPath .\Temp\plt-exp
-                Export-AzDevOpsRuleData -Project "pmo-uwv" -OutputPath .\Temp\pmo-uwv
-                Export-AzDevOpsRuleData -Project "ssc-dac" -OutputPath .\Temp\ssc-dac
-                Export-AzDevOpsRuleData -Project "ssc-mco" -OutputPath .\Temp\ssc-mco
+                # Export-AzDevOpsRuleData -Project "ssc-sep" -OutputPath .\Temp\ssc-sep
+                # Export-AzDevOpsRuleData -Project "pmo-deg" -OutputPath .\Temp\pmo-deg
+                # Export-AzDevOpsRuleData -Project "pmo-gdh" -OutputPath .\Temp\pmo-gdh
+                # Export-AzDevOpsRuleData -Project "ssc-sde" -OutputPath .\Temp\ssc-sde
+                # Export-AzDevOpsRuleData -Project "ssc-vdi" -OutputPath .\Temp\ssc-vdi
+                # Export-AzDevOpsRuleData -Project "pmo-nza" -OutputPath .\Temp\pmo-nza
+                # Export-AzDevOpsRuleData -Project "ssc-mss" -OutputPath .\Temp\ssc-mss
+                # Export-AzDevOpsRuleData -Project "ssc-hlz" -OutputPath .\Temp\ssc-hlz
+                # Export-AzDevOpsRuleData -Project "mgt-nps" -OutputPath .\Temp\mgt-nps
+                # Export-AzDevOpsRuleData -Project "pmo-dct" -OutputPath .\Temp\pmo-dct
+                # Export-AzDevOpsRuleData -Project "ssc-plz" -OutputPath .\Temp\ssc-plz
+                # Export-AzDevOpsRuleData -Project "ssc-obp" -OutputPath .\Temp\ssc-obp
+                # Export-AzDevOpsRuleData -Project "pmo-uwb" -OutputPath .\Temp\pmo-uwb
+                # Export-AzDevOpsRuleData -Project "ssc-tlz" -OutputPath .\Temp\ssc-tlz
+                # Export-AzDevOpsRuleData -Project "ssc-mlz" -OutputPath .\Temp\ssc-mlz
+                # Export-AzDevOpsRuleData -Project "ssc-sst" -OutputPath .\Temp\ssc-sst
+                # Export-AzDevOpsRuleData -Project "pmo-ssc" -OutputPath .\Temp\pmo-ssc
+                # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp\ssc-set
+                # Export-AzDevOpsRuleData -Project "ssc-alz" -OutputPath .\Temp\ssc-alz
+                # Export-AzDevOpsRuleData -Project "ssc-aia" -OutputPath .\Temp\ssc-aia
+                # Export-AzDevOpsRuleData -Project "plt-sep" -OutputPath .\Temp\plt-sep
+                # Export-AzDevOpsRuleData -Project "ssc-adi" -OutputPath .\Temp\ssc-adi
+                # Export-AzDevOpsRuleData -Project "plt-exp" -OutputPath .\Temp\plt-exp
+                # Export-AzDevOpsRuleData -Project "pmo-uwv" -OutputPath .\Temp\pmo-uwv
+                # Export-AzDevOpsRuleData -Project "ssc-dac" -OutputPath .\Temp\ssc-dac
+                # Export-AzDevOpsRuleData -Project "ssc-mco" -OutputPath .\Temp\ssc-mco
 
             env:
               PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
