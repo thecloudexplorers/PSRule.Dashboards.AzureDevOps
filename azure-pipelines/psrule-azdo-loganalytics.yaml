@@ -23,13 +23,21 @@ stages:
         steps:
           - checkout: self
             clean: true
+
+          - powershell: |
+              $patToken = "$(AZDO-PAT)" | ConvertTo-SecureString -AsPlainText -Force
+              $myCredentialsObject = New-Object System.Management.Automation.PSCredential("$(patUser)", $patToken)   
+
+              Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/$(AZDO-ORGANIZATION)/$(project)/_packaging/$(tcsnlps-ssc-set-psmod-dev-feed)/nuget/v3" -PublishLocation "https://pkgs.dev.azure.com/$(AZDO-ORGANIZATION)/$(project)/_packaging/$(tcsnlps-ssc-set-psmod-dev-feed)/nuget/v3" -InstallationPolicy Trusted -Credential $myCredentialsObject
+
           - task: PowerShell@2
             displayName: Install PowerShell Modules
             inputs:
               targetType: "inline"
               script: |
                 Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
-                Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
+                # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
+                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Scope CurrentUser
 
           - task: PowerShell@2
             displayName: Create temporary output directory
