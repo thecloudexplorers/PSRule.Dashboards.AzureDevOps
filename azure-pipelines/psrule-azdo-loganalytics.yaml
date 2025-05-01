@@ -116,7 +116,7 @@ stages:
                 New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mco -ItemType Directory -Force
 
           - task: PowerShell@2
-            displayName: Run PSRule
+            displayName: Export Azure DevOps Data
             inputs:
               targetType: "inline"
               errorActionPreference: continue
@@ -153,6 +153,18 @@ stages:
                 Export-AzDevOpsRuleData -Project "pmo-uwv" -OutputPath .\Temp\pmo-uwv
                 Export-AzDevOpsRuleData -Project "ssc-dac" -OutputPath .\Temp\ssc-dac
                 Export-AzDevOpsRuleData -Project "ssc-mco" -OutputPath .\Temp\ssc-mco
+
+            env:
+              PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
+
+          - task: PowerShell@2
+            displayName: Analise Azure DevOps Data
+            inputs:
+              targetType: "inline"
+              errorActionPreference: continue
+              script: |
+                Import-Module PSRule.Monitor
+                Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
 
                 $result = Invoke-PSRule `
                   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
