@@ -7,12 +7,16 @@ variables:
   # Set to your variable group containing variables
   - group: "azdo-psrule-run"
 
-schedules:
-  - cron: "0 6 * * *"
-    displayName: Run every day at 6am
-    branches:
-      include:
-        - "*"
+# schedules:
+#   - cron: "0 6 * * *"
+#     displayName: Run every day at 6am
+#     branches:
+#       include:
+#         - "*"
+
+trigger:
+  - main
+  - users/wcamargo/*
 
 stages:
   - stage: Run
