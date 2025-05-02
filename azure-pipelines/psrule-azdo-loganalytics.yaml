@@ -194,8 +194,29 @@ stages:
               errorActionPreference: continue
               script: |
 
+                # Remove existing PSRule.Rules.AzureDevOps module
+                Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
+                # Import the new module                 
                 Import-Module PSRule.Monitor
-                Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
+
+                # Generate a new token
+                $tenantId = '$(tenantId)'
+                $clientId = '$(clientId)'
+                $clientSecret = '$(clientSecret)'
+
+                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                    client_id     = $clientId
+                    client_secret = $clientSecret
+                    scope         = "499b84ac-1321-427f-aa17-267ca6975798/.default"
+                    grant_type    = "client_credentials"
+                }
+                $bearerToken = $tokenResponse.access_token
+                Write-Host $bearerToken
+
+                # Connect to Azure DevOps
+                # Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
+                Connect-AzDevOps -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -AccessToken $bearerToken
+
 
                 $result = Invoke-PSRule `
                   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
