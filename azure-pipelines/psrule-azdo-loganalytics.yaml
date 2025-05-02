@@ -81,39 +81,39 @@ stages:
                 # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
                 # Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Scope CurrentUser
 
-          - task: PowerShell@2
-            displayName: Create temporary output directory
-            inputs:
-              targetType: "inline"
-              script: |
-                New-Item -Path $(Build.SourcesDirectory) -Name Temp -ItemType Directory -Force
+          # - task: PowerShell@2
+          #   displayName: Create temporary output directory
+          #   inputs:
+          #     targetType: "inline"
+          #     script: |
+          #       New-Item -Path $(Build.SourcesDirectory) -Name Temp -ItemType Directory -Force
 
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sep -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-deg -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-gdh -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sde -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-vdi -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-nza -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mss -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-hlz -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name mgt-nps -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-dct -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-plz -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-obp -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-uwb -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-tlz -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mlz -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sst -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-ssc -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-set -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-alz -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-aia -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name plt-sep -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-adi -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name plt-exp -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-uwv -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-dac -ItemType Directory -Force
-                New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mco -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sep -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-deg -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-gdh -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sde -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-vdi -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-nza -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mss -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-hlz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name mgt-nps -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-dct -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-plz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-obp -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-uwb -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-tlz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mlz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sst -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-ssc -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-set -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-alz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-aia -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name plt-sep -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-adi -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name plt-exp -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-uwv -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-dac -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mco -ItemType Directory -Force
 
           - task: PowerShell@2
             displayName: Export Azure DevOps Data
@@ -121,8 +121,30 @@ stages:
               targetType: "inline"
               errorActionPreference: continue
               script: |
+
+                # Remove existing PSRule.Rules.AzureDevOps module
+                Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
+                # Import the new module                 
                 Import-Module PSRule.Monitor
-                Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
+
+                # Generate a new token
+                $tenantId = $(tenantId)
+                $clientId = $(clientId)
+                $clientSecret = $(clientSecret)
+
+                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                    client_id     = $clientId
+                    client_secret = $clientSecret
+                    scope         = "499b84ac-1321-427f-aa17-267ca6975798/.default"
+                    grant_type    = "client_credentials"
+                }
+                $newBearerToken = $tokenResponse.access_token
+                Write-Host $newBearerToken
+
+                # Connect to Azure DevOps
+                # Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
+                Connect-AzDevOps -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -AccessToken $bearerToken
+
 
                 Export-AzDevOpsOrganizationRuleData `
                   -OutputPath ".\Temp" -Verbose `
@@ -171,6 +193,7 @@ stages:
               targetType: "inline"
               errorActionPreference: continue
               script: |
+
                 Import-Module PSRule.Monitor
                 Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
 
