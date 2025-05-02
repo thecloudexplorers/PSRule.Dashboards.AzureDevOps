@@ -51,6 +51,7 @@ stages:
           #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
           - task: PowerShell@2
+            displayName: Register $(publishFeed) feed
             inputs:
               targetType: "inline"
               script: |
