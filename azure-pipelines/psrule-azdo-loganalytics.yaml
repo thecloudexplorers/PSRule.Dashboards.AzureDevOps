@@ -128,9 +128,9 @@ stages:
                 Import-Module PSRule.Monitor
 
                 # Generate a new token
-                $tenantId = $(tenantId)
-                $clientId = $(clientId)
-                $clientSecret = $(clientSecret)
+                $tenantId = '$(tenantId)'
+                $clientId = '$(clientId)'
+                $clientSecret = '$(clientSecret)'
 
                 $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
                     client_id     = $clientId
