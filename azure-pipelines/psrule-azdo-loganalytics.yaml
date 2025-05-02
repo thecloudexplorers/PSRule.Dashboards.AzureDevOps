@@ -223,6 +223,6 @@ stages:
                   -InputPath '$(Build.SourcesDirectory)/Temp/' `
                   -Format Detect `
                   -Culture en
-                $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+                $result -Verbose | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
             env:
               PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
