@@ -138,8 +138,8 @@ stages:
                     scope         = "499b84ac-1321-427f-aa17-267ca6975798/.default"
                     grant_type    = "client_credentials"
                 }
-                $newBearerToken = $tokenResponse.access_token
-                Write-Host $newBearerToken
+                $bearerToken = $tokenResponse.access_token
+                Write-Host $bearerToken
 
                 # Connect to Azure DevOps
                 # Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
