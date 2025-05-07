@@ -1,7 +1,6 @@
 name: PSRule-ADO
 
-pool:
-  vmImage: "ubuntu-latest"
+pool: MSHosted-WorkloadsPool
 
 variables:
   # Set to your variable group containing variables
@@ -103,8 +102,9 @@ stages:
                 Export-AzDevOpsOrganizationRuleData `
                   -OutputPath $env:EXPORT_DIRECTORY `
                   -Organization $azureDevOpsOrganizationName `
-                  -OrganizationId $azureDevOpsOrganizationId
+                  -OrganizationId $azureDevOpsOrganizationId -Verbose
             env:
+              PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
 
