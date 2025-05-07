@@ -28,8 +28,30 @@ stages:
           - checkout: self
             clean: true
 
+          # - powershell: |
+          #     $patToken = "$(AZDO-PAT)" | ConvertTo-SecureString -AsPlainText -Force
+          #     $myCredentialsObject = New-Object System.Management.Automation.PSCredential("$(patUser)", $patToken)
+
+          #     # Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/$(AZDO-ORGANIZATION)/$(project)/_packaging/$(publishFeed)/nuget/v3" -PublishLocation "https://pkgs.dev.azure.com/$(AZDO-ORGANIZATION)/$(project)/_packaging/$(publishFeed)/nuget/v3" -InstallationPolicy Trusted -Credential $myCredentialsObject
+          #     Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3" -InstallationPolicy Trusted -Credential $myCredentialsObject
+          #     Register-PackageSource -Name "PSGalleryUpstream" -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential #6
+
+          #     $token = "$(AZDO-PAT)" | ConvertTo-SecureString -AsPlainText -Force #2
+          #     $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token) #3
+
+          #     $sourceName = "MyFeed" #4
+          #     $feedLocation = "https://pkgs.dev.azure.com/ochzhen/_packaging/myfeed/nuget/v2" #5
+
+          #     Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential #6
+
+          #     $moduleName = "MyPowerShellModule" #7
+
+          #     Install-Module -Name $moduleName -Repository $sourceName -Force -Credential $credential #8
+          #   env:
+          #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
           - task: PowerShell@2
-            displayName: Register [$(publishFeed)] feed
+            displayName: Register $(publishFeed) feed
             inputs:
               targetType: "inline"
               script: |
@@ -41,14 +63,58 @@ stages:
                 $sourceName = "PSGalleryUpstream"
                 $feedLocation = "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2"                
 
+
                 Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
 
                 Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
-                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
+
               failOnStderr: true
               pwsh: true
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken) #10
+
+          - task: PowerShell@2
+            displayName: Install PowerShell Modules
+            inputs:
+              targetType: "inline"
+              script: |
+                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
+                # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
+                # Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Scope CurrentUser
+
+          # - task: PowerShell@2
+          #   displayName: Create temporary output directory
+          #   inputs:
+          #     targetType: "inline"
+          #     script: |
+          #       New-Item -Path $(Build.SourcesDirectory) -Name Temp -ItemType Directory -Force
+
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sep -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-deg -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-gdh -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sde -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-vdi -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-nza -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mss -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-hlz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name mgt-nps -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-dct -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-plz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-obp -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-uwb -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-tlz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mlz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-sst -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-ssc -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-set -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-alz -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-aia -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name plt-sep -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-adi -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name plt-exp -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name pmo-uwv -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-dac -ItemType Directory -Force
+          #       New-Item -Path $(Build.SourcesDirectory)\Temp -Name ssc-mco -ItemType Directory -Force
 
           - task: PowerShell@2
             displayName: Export Azure DevOps Data
@@ -56,41 +122,7 @@ stages:
               targetType: "inline"
               errorActionPreference: continue
               script: |
-                # Remove existing PSRule.Rules.AzureDevOps module
-                Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
-                # Import the new module                 
-                Import-Module PSRule.Monitor
 
-                # Generate a new token
-                $tenantId = '$(tenantId)'
-                $clientId = '$(clientId)'
-                $clientSecret = '$(clientSecret)'
-
-                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
-                    client_id     = $clientId
-                    client_secret = $clientSecret
-                    scope         = "499b84ac-1321-427f-aa17-267ca6975798/.default"
-                    grant_type    = "client_credentials"
-                }
-                $bearerToken = $tokenResponse.access_token
-                Write-Host $bearerToken
-
-                # Connect to Azure DevOps
-                Connect-AzDevOps -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -AccessToken $bearerToken
-
-                Export-AzDevOpsOrganizationRuleData `
-                  -OutputPath ".\Temp" -Verbose `
-                  -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" `
-                  -Organization "tcsnlpscan"
-            env:
-              PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
-
-          - task: PowerShell@2
-            displayName: Analise Azure DevOps Data
-            inputs:
-              targetType: "inline"
-              errorActionPreference: continue
-              script: |
                 # Remove existing PSRule.Rules.AzureDevOps module
                 Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
                 # Import the new module                 
@@ -114,11 +146,84 @@ stages:
                 # Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
                 Connect-AzDevOps -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -AccessToken $bearerToken
 
+
+                Export-AzDevOpsOrganizationRuleData `
+                  -OutputPath ".\Temp" -Verbose `
+                  -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" `
+                  -Organization "tcsnlpscan"
+
+
+
+                # Export-AzDevOpsOrganizationRuleData -OutputPath .\Temp -ErrorAction Continue
+
+                # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp
+
+                # Export-AzDevOpsRuleData -Project "ssc-sep" -OutputPath .\Temp\ssc-sep
+                # Export-AzDevOpsRuleData -Project "pmo-deg" -OutputPath .\Temp\pmo-deg
+                # Export-AzDevOpsRuleData -Project "pmo-gdh" -OutputPath .\Temp\pmo-gdh
+                # Export-AzDevOpsRuleData -Project "ssc-sde" -OutputPath .\Temp\ssc-sde
+                # Export-AzDevOpsRuleData -Project "ssc-vdi" -OutputPath .\Temp\ssc-vdi
+                # Export-AzDevOpsRuleData -Project "pmo-nza" -OutputPath .\Temp\pmo-nza
+                # Export-AzDevOpsRuleData -Project "ssc-mss" -OutputPath .\Temp\ssc-mss
+                # Export-AzDevOpsRuleData -Project "ssc-hlz" -OutputPath .\Temp\ssc-hlz
+                # Export-AzDevOpsRuleData -Project "mgt-nps" -OutputPath .\Temp\mgt-nps
+                # Export-AzDevOpsRuleData -Project "pmo-dct" -OutputPath .\Temp\pmo-dct
+                # Export-AzDevOpsRuleData -Project "ssc-plz" -OutputPath .\Temp\ssc-plz
+                # Export-AzDevOpsRuleData -Project "ssc-obp" -OutputPath .\Temp\ssc-obp
+                # Export-AzDevOpsRuleData -Project "pmo-uwb" -OutputPath .\Temp\pmo-uwb
+                # Export-AzDevOpsRuleData -Project "ssc-tlz" -OutputPath .\Temp\ssc-tlz
+                # Export-AzDevOpsRuleData -Project "ssc-mlz" -OutputPath .\Temp\ssc-mlz
+                # Export-AzDevOpsRuleData -Project "ssc-sst" -OutputPath .\Temp\ssc-sst
+                # Export-AzDevOpsRuleData -Project "pmo-ssc" -OutputPath .\Temp\pmo-ssc
+                # Export-AzDevOpsRuleData -Project "ssc-set" -OutputPath .\Temp\ssc-set
+                # Export-AzDevOpsRuleData -Project "ssc-alz" -OutputPath .\Temp\ssc-alz
+                # Export-AzDevOpsRuleData -Project "ssc-aia" -OutputPath .\Temp\ssc-aia
+                # Export-AzDevOpsRuleData -Project "plt-sep" -OutputPath .\Temp\plt-sep
+                # Export-AzDevOpsRuleData -Project "ssc-adi" -OutputPath .\Temp\ssc-adi
+                # Export-AzDevOpsRuleData -Project "plt-exp" -OutputPath .\Temp\plt-exp
+                # Export-AzDevOpsRuleData -Project "pmo-uwv" -OutputPath .\Temp\pmo-uwv
+                # Export-AzDevOpsRuleData -Project "ssc-dac" -OutputPath .\Temp\ssc-dac
+                # Export-AzDevOpsRuleData -Project "ssc-mco" -OutputPath .\Temp\ssc-mco
+
+            env:
+              PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
+
+          - task: PowerShell@2
+            displayName: Analise Azure DevOps Data
+            inputs:
+              targetType: "inline"
+              errorActionPreference: continue
+              script: |
+
+                # Remove existing PSRule.Rules.AzureDevOps module
+                Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
+                # Import the new module                 
+                Import-Module PSRule.Monitor
+
+                # Generate a new token
+                $tenantId = '$(tenantId)'
+                $clientId = '$(clientId)'
+                $clientSecret = '$(clientSecret)'
+
+                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                    client_id     = $clientId
+                    client_secret = $clientSecret
+                    scope         = "499b84ac-1321-427f-aa17-267ca6975798/.default"
+                    grant_type    = "client_credentials"
+                }
+                $bearerToken = $tokenResponse.access_token
+                Write-Host $bearerToken
+
+                # Connect to Azure DevOps
+                # Connect-AzDevOps -Organization '$(AZDO-ORGANIZATION)' -PAT "$(AZDO-PAT)"
+                Connect-AzDevOps -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -AccessToken $bearerToken
+
+
                 $result = Invoke-PSRule `
                   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
                   -InputPath '$(Build.SourcesDirectory)/Temp/' `
                   -Format Detect `
                   -Culture en
-                $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+                $result -Verbose | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
             env:
               PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
