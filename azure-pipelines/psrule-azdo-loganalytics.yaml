@@ -54,18 +54,20 @@ stages:
               script: |
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+                Write-Host "Creating credentials"
                 $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
                 $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token)
 
-                # Remove existing PSRule.Rules.AzureDevOps module
+                Write-Host "Remove existing PSRule.Rules.AzureDevOps module"
                 Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
 
-                # Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
-                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force 
+                Write-Host "Install Modules"
+                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential                
                 Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
 
-                # Import the new module                 
+                Write-Host "Import modules"
                 Import-Module PSRule.Monitor
+                Import-Module PSRule.Rules.AzureDevOps
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
@@ -75,8 +77,8 @@ stages:
               targetType: "inline"
               errorActionPreference: continue
               script: |
-                $organizationName = "tcsnlpscan"
-                $organizationId = "14b34e2d-2a98-4463-950d-b4d864ad3d2c"
+                $azureDevOpsOrganizationName = "tcsnlpscan"
+                $azureDevOpsOrganizationId = "14b34e2d-2a98-4463-950d-b4d864ad3d2c"
 
                 # Generates a new bearer token for Azure DevOps API
                 $tenantId = '$(tenantId)'
@@ -96,12 +98,13 @@ stages:
                 Write-Host $bearerToken
 
                 # Connect to Azure DevOps
-                Connect-AzDevOps -Organization $organizationName -OrganizationId $organizationId -AccessToken $bearerToken
+                Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
 
                 Export-AzDevOpsOrganizationRuleData `
                   -OutputPath ".\Temp" -Verbose `
-                  -OrganizationId $organizationId `
-                  -Organization $organizationName
+                  -Organization $azureDevOpsOrganizationName `
+                  -OrganizationId $azureDevOpsOrganizationId
+
             env:
               PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
