@@ -42,8 +42,6 @@ stages:
                 $feedLocation = "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2"                
 
                 Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
-
-                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
               failOnStderr: true
               pwsh: true
             env:
@@ -70,37 +68,41 @@ stages:
               targetType: "inline"
               errorActionPreference: continue
               script: |
+                $organizationName = "tcsnlpscan"
+                $organizationId = "14b34e2d-2a98-4463-950d-b4d864ad3d2c"
 
                 # Remove existing PSRule.Rules.AzureDevOps module
                 Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
                 # Import the new module                 
                 Import-Module PSRule.Monitor
 
-                # Generate a new token
+                # Generates a new bearer token for Azure DevOps API
                 $tenantId = '$(tenantId)'
                 $clientId = '$(clientId)'
                 $clientSecret = '$(clientSecret)'
 
+                # Azure DevOps API Scope ID - It Never Changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
+                $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
+
                 $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
                     client_id     = $clientId
                     client_secret = $clientSecret
-                    scope         = "499b84ac-1321-427f-aa17-267ca6975798/.default"
+                    scope         = "$scopeId/.default"
                     grant_type    = "client_credentials"
                 }
                 $bearerToken = $tokenResponse.access_token
                 Write-Host $bearerToken
 
                 # Connect to Azure DevOps
-                Connect-AzDevOps -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -AccessToken $bearerToken
-
+                Connect-AzDevOps -Organization $organizationName -OrganizationId $organizationId -AccessToken $bearerToken
 
                 Export-AzDevOpsOrganizationRuleData `
                   -OutputPath ".\Temp" -Verbose `
-                  -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" `
-                  -Organization "tcsnlpscan"
-
+                  -OrganizationId $organizationId `
+                  -Organization $organizationName
             env:
               PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
           - task: PowerShell@2
             displayName: Analise Azure DevOps Data
