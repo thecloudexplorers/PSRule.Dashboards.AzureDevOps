@@ -77,8 +77,8 @@ stages:
               targetType: "inline"
               errorActionPreference: continue
               script: |
-                $azureDevOpsOrganizationName = $(azureDevOpsOrganizationName)
-                $azureDevOpsOrganizationId = $(azureDevOpsOrganizationId)
+                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                $azureDevOpsOrganizationId = "$(azureDevOpsOrganizationId)"
 
                 # Generates a new bearer token for Azure DevOps API
                 $tenantId = '$(tenantId)'
