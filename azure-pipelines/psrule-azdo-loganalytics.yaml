@@ -45,7 +45,7 @@ stages:
                 Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
 
                 Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
-                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
+                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force -Repository PSGalleryUpstream
               failOnStderr: true
               pwsh: true
             env:
