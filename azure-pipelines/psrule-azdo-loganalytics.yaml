@@ -45,20 +45,12 @@ stages:
                 Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
 
                 Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
+                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
 
               failOnStderr: true
               pwsh: true
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken) #10
-
-          - task: PowerShell@2
-            displayName: Install PowerShell Modules
-            inputs:
-              targetType: "inline"
-              script: |
-                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
-                # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
-                # Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Scope CurrentUser
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
           - task: PowerShell@2
             displayName: Export Azure DevOps Data
