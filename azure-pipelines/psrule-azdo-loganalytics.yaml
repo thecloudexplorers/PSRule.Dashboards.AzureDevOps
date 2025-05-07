@@ -101,12 +101,18 @@ stages:
                 Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
 
                 Export-AzDevOpsOrganizationRuleData `
-                  -OutputPath ".\Temp" `
+                  -OutputPath $env:EXPORT_DIRECTORY `
                   -Organization $azureDevOpsOrganizationName `
                   -OrganizationId $azureDevOpsOrganizationId
-
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publishing Azure DevOps Exports & Reports
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/export
+              artifactName: AzureDevOpsData
 
           - task: PowerShell@2
             displayName: Analyse Azure DevOps Data
@@ -116,9 +122,9 @@ stages:
               script: |
                 $result = Invoke-PSRule `
                   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-                  -InputPath '$(Build.SourcesDirectory)/Temp/' `
+                  -InputPath $env:EXPORT_DIRECTORY `
                   -Format Detect `
                   -Culture en
                 $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
             env:
-              PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
+              EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
