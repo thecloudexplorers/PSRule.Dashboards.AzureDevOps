@@ -60,7 +60,8 @@ stages:
                 # Remove existing PSRule.Rules.AzureDevOps module
                 Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
 
-                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
+                # Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
+                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force 
                 Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
 
                 # Import the new module                 
@@ -106,7 +107,7 @@ stages:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
           - task: PowerShell@2
-            displayName: Analise Azure DevOps Data
+            displayName: Analyse Azure DevOps Data
             inputs:
               targetType: "inline"
               errorActionPreference: continue
