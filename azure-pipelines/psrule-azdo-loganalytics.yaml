@@ -103,7 +103,7 @@ stages:
                 Export-AzDevOpsOrganizationRuleData `
                   -OutputPath $env:EXPORT_DIRECTORY `
                   -Organization $azureDevOpsOrganizationName `
-                  -OrganizationId $azureDevOpsOrganizationId -Verbose
+                  -OrganizationId $azureDevOpsOrganizationId
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
