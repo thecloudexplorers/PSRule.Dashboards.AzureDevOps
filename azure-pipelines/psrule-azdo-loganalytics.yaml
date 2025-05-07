@@ -77,15 +77,15 @@ stages:
               targetType: "inline"
               errorActionPreference: continue
               script: |
-                $azureDevOpsOrganizationName = "tcsnlpscan"
-                $azureDevOpsOrganizationId = "14b34e2d-2a98-4463-950d-b4d864ad3d2c"
+                $azureDevOpsOrganizationName = $(azureDevOpsOrganizationName)
+                $azureDevOpsOrganizationId = $(azureDevOpsOrganizationId)
 
                 # Generates a new bearer token for Azure DevOps API
                 $tenantId = '$(tenantId)'
                 $clientId = '$(clientId)'
                 $clientSecret = '$(clientSecret)'
 
-                # Azure DevOps API Scope ID - It Never Changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
+                # Azure DevOps API Scope ID - It never changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
                 $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
 
                 $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
