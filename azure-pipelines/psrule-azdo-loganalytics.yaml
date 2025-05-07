@@ -41,8 +41,11 @@ stages:
                 $sourceName = "PSGalleryUpstream"
                 $feedLocation = "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2"                
 
+
                 Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
-                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force -Repository PSGalleryUpstream
+
+                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
+                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
               failOnStderr: true
               pwsh: true
             env:
@@ -53,8 +56,9 @@ stages:
           #   inputs:
           #     targetType: "inline"
           #     script: |
-          #       Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
-          #       Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force -Repository PSGalleryUpstream
+          #       Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
+          #       # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
+          #       # Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Scope CurrentUser
 
           - task: PowerShell@2
             displayName: Export Azure DevOps Data
