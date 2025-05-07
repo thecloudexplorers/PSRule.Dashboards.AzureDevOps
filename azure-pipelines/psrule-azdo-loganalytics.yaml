@@ -95,7 +95,7 @@ stages:
                     grant_type    = "client_credentials"
                 }
                 $bearerToken = $tokenResponse.access_token
-                Write-Host $bearerToken
+                Write-Host "Bearer Token: [$bearerToken]"
 
                 # Connect to Azure DevOps
                 Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
