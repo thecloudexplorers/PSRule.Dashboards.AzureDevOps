@@ -57,19 +57,25 @@ stages:
                 $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
                 $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token)
 
+                # Remove existing PSRule.Rules.AzureDevOps module
+                Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
+
                 Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
                 Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
           - task: PowerShell@2
-            displayName: Connect to Azure DevOps
+            displayName: Export Azure DevOps Data
             inputs:
               targetType: "inline"
               errorActionPreference: continue
               script: |
                 $organizationName = "tcsnlpscan"
-                $organizationId = "14b34e2d-2a98-4463-950d-b4d864ad3d2c"                                
+                $organizationId = "14b34e2d-2a98-4463-950d-b4d864ad3d2c"
+
+                # Import the new module                 
+                Import-Module PSRule.Monitor
 
                 # Generates a new bearer token for Azure DevOps API
                 $tenantId = '$(tenantId)'
@@ -90,23 +96,6 @@ stages:
 
                 # Connect to Azure DevOps
                 Connect-AzDevOps -Organization $organizationName -OrganizationId $organizationId -AccessToken $bearerToken
-            env:
-              PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-          - task: PowerShell@2
-            displayName: Export Azure DevOps Data
-            inputs:
-              targetType: "inline"
-              errorActionPreference: continue
-              script: |
-                $organizationName = "tcsnlpscan"
-                $organizationId = "14b34e2d-2a98-4463-950d-b4d864ad3d2c"
-
-                # Remove existing PSRule.Rules.AzureDevOps module
-                Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
-                # Import the new module                 
-                Import-Module PSRule.Monitor
 
                 Export-AzDevOpsOrganizationRuleData `
                   -OutputPath ".\Temp" -Verbose `
