@@ -101,12 +101,11 @@ stages:
                 Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
 
                 Export-AzDevOpsOrganizationRuleData `
-                  -OutputPath ".\Temp" -Verbose `
+                  -OutputPath ".\Temp" `
                   -Organization $azureDevOpsOrganizationName `
                   -OrganizationId $azureDevOpsOrganizationId
 
             env:
-              PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
           - task: PowerShell@2
