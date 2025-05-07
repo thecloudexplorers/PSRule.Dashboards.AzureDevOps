@@ -105,7 +105,6 @@ stages:
                   -Organization $azureDevOpsOrganizationName `
                   -OrganizationId $azureDevOpsOrganizationId -Verbose
             env:
-              PSRULE_CONVENTION_INCLUDE: "Monitor.LogAnalytics.Import"
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
 
