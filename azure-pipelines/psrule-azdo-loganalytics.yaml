@@ -94,7 +94,7 @@ stages:
                     scope         = "$scopeId/.default"
                     grant_type    = "client_credentials"
                 }
-                $bearerToken = $tokenResponse.access_token
+                $bearerToken = "$tokenResponse.access_token"
                 Write-Host "Bearer Token: [$bearerToken]"
 
                 # Connect to Azure DevOps
