@@ -34,7 +34,7 @@ stages:
               script: |
                 $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
                 $project = "$(project)"
-                $feedName = "$(feedName)"
+                $feedName = "$(publishFeed)"
 
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
