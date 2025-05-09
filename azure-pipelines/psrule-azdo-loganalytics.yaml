@@ -67,11 +67,11 @@ stages:
                 Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
 
                 Write-Host "Install Modules"
-                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential
+                Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential -RequiredVersion 0.5.1
                 Install-Module -Name PSRule.Monitor -Repository PSGalleryUpstream -Force -Credential $credential
 
                 Write-Host "Import modules"
-                Import-Module PSRule.Monitor
+                Import-Module PSRule.Monitor 
                 Import-Module PSRule.Rules.AzureDevOps
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
