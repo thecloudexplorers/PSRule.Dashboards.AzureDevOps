@@ -32,13 +32,17 @@ stages:
             inputs:
               targetType: "inline"
               script: |
+                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                $project = "$(project)"
+                $feedName = "$(feedName)"
+
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
                 $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
                 $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token)
 
                 $sourceName = "PSGalleryUpstream"
-                $feedLocation = "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2"                
+                $feedLocation = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v2"                
 
                 Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
               failOnStderr: true
