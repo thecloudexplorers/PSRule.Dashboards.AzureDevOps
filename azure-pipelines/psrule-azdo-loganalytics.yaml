@@ -44,7 +44,9 @@ stages:
                 $sourceName = "PSGalleryUpstream"
                 $feedLocation = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v2"                
 
-                Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
+                if (-not (Get-PackageSource -Name $sourceName -ErrorAction SilentlyContinue)) {
+                  Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
+                }
               failOnStderr: true
               pwsh: true
             env:
