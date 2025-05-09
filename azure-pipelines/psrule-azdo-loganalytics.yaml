@@ -130,6 +130,6 @@ stages:
                   -InputPath $env:EXPORT_DIRECTORY `
                   -Format Detect `
                   -Culture en
-                $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+                $result -Verbose | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
             env:
               EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
