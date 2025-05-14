@@ -72,7 +72,7 @@ stages:
                 $newBearerToken = $tokenResponse.access_token 
 
                 Write-Host "Installing PowerShell module"
-                Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$feedName" -Reinstall -Credential $credential
+                Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$feedName" -Reinstall -Credential $credential 
 
                 # Write-Host "Connect to Azure DevOps"
                 # Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
