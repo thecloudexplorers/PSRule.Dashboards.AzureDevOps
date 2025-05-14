@@ -74,14 +74,14 @@ stages:
                 Write-Host "Installing PowerShell module"
                 Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$feedName" -Reinstall -Credential $credential
 
-                Write-Host "Connect to Azure DevOps"
-                Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
+                # Write-Host "Connect to Azure DevOps"
+                # Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
 
-                Write-Host "Exporting Azure DevOps data"
-                Export-AzDevOpsOrganizationRuleData `
-                  -OutputPath $env:EXPORT_DIRECTORY `
-                  -Organization $azureDevOpsOrganizationName `
-                  -OrganizationId $azureDevOpsOrganizationId
+                # Write-Host "Exporting Azure DevOps data"
+                # Export-AzDevOpsOrganizationRuleData `
+                #   -OutputPath $env:EXPORT_DIRECTORY `
+                #   -Organization $azureDevOpsOrganizationName `
+                #   -OrganizationId $azureDevOpsOrganizationId
               failOnStderr: true
               pwsh: true
             env:
