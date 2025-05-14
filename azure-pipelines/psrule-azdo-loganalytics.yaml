@@ -62,14 +62,14 @@ stages:
 
                 $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
 
-                # Write-Host "Creating bearer token" 
-                # $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
-                #     client_id     = $clientId
-                #     client_secret = $clientSecret
-                #     scope         = "$scopeId/.default"
-                #     grant_type    = "client_credentials"
-                # }
-                # $newBearerToken = $tokenResponse.access_token 
+                Write-Host "Creating bearer token" 
+                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                    client_id     = $clientId
+                    client_secret = $clientSecret
+                    scope         = "$scopeId/.default"
+                    grant_type    = "client_credentials"
+                }
+                $newBearerToken = $tokenResponse.access_token 
 
                 # Write-Host "Installing PowerShell module"
                 # Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$azureDevOpsOrganizationName" -Reinstall
