@@ -32,20 +32,26 @@ stages:
             inputs:
               targetType: "inline"
               script: |
-                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                # Ensure TLS 1.2 for secure connection
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"                
                 $project = "$(project)"
-                $feedName = "$(publishFeed)"
+                $feedName = "$(feedName)"
+
+
+                # Build feed URL (NuGet v3 for PSResourceGet)
+                $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
 
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-                $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
-                $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token)
+                # Convert PAT to secure credential
+                $secureToken = ConvertTo-SecureString $env:SYSTEM_ACCESSTOKEN -AsPlainText -Force
+                $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $secureToken)
 
-                $sourceName = "PSGalleryUpstream"
-                $feedLocation = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v2"                
-
-                if (-not (Get-PackageSource -Name $sourceName -ErrorAction SilentlyContinue)) {
-                  Register-PackageSource -Name $sourceName -ProviderName PowerShellGet -Location $feedLocation -Trusted -Credential $credential
+                # Register the repository if not already registered
+                if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
+                    Register-PSResourceRepository -Name $feedName -Uri $feedUrl -Trusted
                 }
               failOnStderr: true
               pwsh: true
