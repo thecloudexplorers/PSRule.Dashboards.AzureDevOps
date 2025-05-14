@@ -62,6 +62,7 @@ stages:
 
                 $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
 
+                Write-Host "Creating bearer token" 
                 $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
                     client_id     = $clientId
                     client_secret = $clientSecret
@@ -70,11 +71,13 @@ stages:
                 }
                 $newBearerToken = $tokenResponse.access_token 
 
+                Write-Host "Installing PowerShell module"
                 Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$azureDevOpsOrganizationName" -Reinstall
 
-                # Connect to Azure DevOps
-                Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
+                Write-Host "Connect to Azure DevOps"
+                Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
 
+                Write-Host "Exporting Azure DevOps data"
                 Export-AzDevOpsOrganizationRuleData `
                   -OutputPath $env:EXPORT_DIRECTORY `
                   -Organization $azureDevOpsOrganizationName `
