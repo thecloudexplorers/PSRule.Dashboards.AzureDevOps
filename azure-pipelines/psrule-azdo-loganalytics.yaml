@@ -53,6 +53,32 @@ stages:
                 if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
                     Register-PSResourceRepository -Name $feedName -Uri $feedUrl -Trusted
                 }
+
+                #TODO: Break into new step
+                # Generate a new token
+                $tenantId = $($tenantId)
+                $clientId = $(clientId)
+                $clientSecret = $(clientSecret)
+
+                $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
+
+                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                    client_id     = $clientId
+                    client_secret = $clientSecret
+                    scope         = "$scopeId/.default"
+                    grant_type    = "client_credentials"
+                }
+                $newBearerToken = $tokenResponse.access_token 
+
+                Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$azureDevOpsOrganizationName" -Reinstall
+
+                # Connect to Azure DevOps
+                Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
+
+                Export-AzDevOpsOrganizationRuleData `
+                  -OutputPath $env:EXPORT_DIRECTORY `
+                  -Organization $azureDevOpsOrganizationName `
+                  -OrganizationId $azureDevOpsOrganizationId
               failOnStderr: true
               pwsh: true
             env:
