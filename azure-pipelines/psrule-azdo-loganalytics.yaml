@@ -56,9 +56,9 @@ stages:
 
                 #TODO: Break into new step
                 # Generate a new token
-                $tenantId = $($tenantId)
-                $clientId = $(clientId)
-                $clientSecret = $(clientSecret)
+                $tenantId = "$($tenantId)"
+                $clientId = "$(clientId)"
+                $clientSecret = "$(clientSecret)"
 
                 $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
 
