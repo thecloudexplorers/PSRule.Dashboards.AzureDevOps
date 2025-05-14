@@ -56,7 +56,7 @@ stages:
 
                 #TODO: Break into new step
                 # Generate a new token
-                $tenantId = "$($tenantId)"
+                $tenantId = "$(tenantId)"
                 $clientId = "$(clientId)"
                 $clientSecret = "$(clientSecret)"
 
