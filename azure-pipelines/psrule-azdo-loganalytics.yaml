@@ -32,6 +32,9 @@ stages:
 
           # 2) Injeta o PAT em todas as fontes configuradas no pipeline (incluindo feeds privados)
           - task: NuGetAuthenticate@1
+            inputs:
+              forceReinstallCredentialProvider: true
+              feedUrl: "https://pkgs.dev.azure.com/$(azureDevOpsOrganizationName)/$(project)/_packaging/$(feedName)/nuget/v3/index.json"
 
           - task: PowerShell@2
             displayName: Register $(publishFeed) feed
