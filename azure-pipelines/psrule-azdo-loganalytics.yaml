@@ -36,36 +36,67 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                Write-Host "=== Decodificando claims do SYSTEM_ACCESSTOKEN ==="
+                Write-Host "=== Início: validação de SYSTEM_ACCESSTOKEN ==="
+
                 $token = $env:SYSTEM_ACCESSTOKEN
-                if (-not $token) { throw "SYSTEM_ACCESSTOKEN não está definido!" }
+                if (-not $token) {
+                  throw "SYSTEM_ACCESSTOKEN não está definido!"
+                }
 
-                # separa as partes do JWT
-                $parts = $token -split '\.'
-                if ($parts.Count -lt 2) { throw "Token não está no formato JWT esperado." }
-
-                # pega a parte de payload (claims)
+                # 1) Decodifica o payload do JWT
+                $parts   = $token -split '\.'
                 $payload = $parts[1]
-
-                # corrige padding Base64
                 switch ($payload.Length % 4) {
                   2 { $payload += '==' }
                   3 { $payload += '=' }
                 }
-
-                # decodifica e converte para objeto
-                $json = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($payload))
+                $json   = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($payload))
                 $claims = $json | ConvertFrom-Json
 
-                # exibe os campos de interesse
-                Write-Host "`n---- Claims extras ----"
-                $claims | Select-Object exp, nbf, iat, iss, aud, scp, roles, unique_name, sub | Format-List
+                # 2) Extrai scp e roles
+                $scopes = @()
+                if ($claims.scp) { $scopes = $claims.scp -split ' ' }
+                $roles  = @()
+                if ($claims.roles) { $roles = $claims.roles }
 
-                # exibe todos os claims caso queira explorar
-                Write-Host "`n---- Todos os claims ----"
-                $claims | Format-List
+                Write-Host ""
+                Write-Host "Scopes disponíveis:"
+                $scopes | ForEach-Object { Write-Host " - $_" }
+                Write-Host ""
+                Write-Host "Roles disponíveis:"
+                $roles | ForEach-Object { Write-Host " - $_" }
 
-                Write-Host "=== FIM da decodificação ==="
+                # 3) Define o que é necessário
+                $requiredScopes = @('vso.packaging_read')
+                $requiredRoles  = @('build_service')
+
+                # 4) Verifica quais estão faltando
+                $missingScopes = $requiredScopes | Where-Object { $_ -notin $scopes }
+                $missingRoles  = $requiredRoles  | Where-Object { $_ -notin $roles }
+
+                if ($missingScopes.Count -eq 0) {
+                  Write-Host "Token contém todos os scopes necessários."
+                } else {
+                  foreach ($ms in $missingScopes) {
+                    Write-Error "Permissão de scope ausente: $ms"
+                  }
+                }
+
+                if ($missingRoles.Count -eq 0) {
+                  Write-Host "Token contém todas as roles necessárias."
+                } else {
+                  foreach ($mr in $missingRoles) {
+                    Write-Error "Permissão de role ausente: $mr"
+                  }
+                }
+
+                # 5) Se faltar qualquer permissão, falha o step com resumo
+                if ($missingScopes.Count -gt 0 -or $missingRoles.Count -gt 0) {
+                  $allMissing = ($missingScopes + $missingRoles) -join ', '
+                  throw "Permissões insuficientes: faltando [$allMissing]"
+                }
+
+                Write-Host "=== Fim: sistema possui todas as permissões necessárias ==="
 
               # 15/05
               # - checkout: self
