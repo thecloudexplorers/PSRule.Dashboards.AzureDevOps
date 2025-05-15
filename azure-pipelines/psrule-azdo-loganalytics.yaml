@@ -27,49 +27,22 @@ stages:
           - checkout: self
             clean: true
 
+          # 1) Garante que haja um NuGet CLI no agente
+          - task: NuGetToolInstaller@1
+
+          # 2) Injeta o PAT em todas as fontes configuradas no pipeline (incluindo feeds privados)
+          - task: NuGetAuthenticate@1
+
           - task: PowerShell@2
             displayName: Register $(publishFeed) feed
             inputs:
               targetType: "inline"
               script: |
-                # parâmetros
-                $org      = "$(azureDevOpsOrganizationName)"
-                $proj     = "$(project)"
-                $feedName = "$(feedName)"
-                $feedUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3/index.json"
-                $pat      = "$(AZDO-PAT)"
-
-                # 1) Cria o nuget.config com PAT
-                $nugetConfig = @"
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <add key="$feedName" value="$feedUrl" />
-                  </packageSources>
-                  <packageSourceCredentials>
-                    <$feedName>
-                      <add key="Username"           value="AzureDevOps" />
-                      <add key="ClearTextPassword"  value="$pat" />
-                    </$feedName>
-                  </packageSourceCredentials>
-                </configuration>
-                "@
-
-                $nugetDir = "$env:USERPROFILE\AppData\Roaming\NuGet"
-                New-Item -Path $nugetDir -ItemType Directory -Force | Out-Null
-                $nugetConfig | Set-Content "$nugetDir\nuget.config" -Encoding UTF8
-
-                # 2) Registra o repositório (sem credencial)
-                if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
-                  Register-PSResourceRepository `
-                    -Name $feedName `
-                    -SourceLocation $feedUrl `
-                    -InstallationPolicy Trusted
-                }
-
-                # 3) Instala — agora vai ler o nuget.config
-                Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository $feedName -Verbose
-
+                # Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository $feedName -Verbose
+                Install-PSResource `
+                  -Name PSRule.Rules.AzureDevOps `
+                  -Repository "$(feedName)" `
+                  -Verbose
               failOnStderr: true
               pwsh: true
             env:
