@@ -35,19 +35,63 @@ stages:
               feedUrl: "https://pkgs.dev.azure.com/$(azureDevOpsOrganizationName)/$(project)/_packaging/$(feedName)/nuget/v3/index.json"
 
           - task: PowerShell@2
-            displayName: Register $(publishFeed) feed
+            displayName: "Download & Import PSRule.Rules.AzureDevOps"
             inputs:
               targetType: "inline"
-              script: |
-                # Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository $feedName -Verbose
-                Install-PSResource `
-                  -Name PSRule.Rules.AzureDevOps `
-                  -Repository "$(feedName)" `
-                  -Verbose
-              failOnStderr: true
               pwsh: true
+              script: |
+                # parâmetros do feed
+                $org      = '$(azureDevOpsOrganizationName)'
+                $proj     = '$(project)'
+                $feedName = '$(feedName)'
+                $feedUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3/index.json"
+
+                # PAT via System.AccessToken (OAuth)  
+                $pat         = "$(System.AccessToken)"
+                $secureToken = ConvertTo-SecureString $pat -AsPlainText -Force
+                $cred        = New-Object System.Management.Automation.PSCredential("AzureDevOps", $secureToken)
+
+                # 1) registra o repositório, incluindo o PSCredential  
+                if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
+                  Register-PSResourceRepository `
+                    -Name $feedName `
+                    -SourceLocation $feedUrl `
+                    -InstallationPolicy Trusted `
+                    -Credential $cred
+                }
+
+                # 2) baixa o módulo .nupkg para uma pasta temporária  
+                $modulesDir = "$env:Pipeline_Workspace\_modules"
+                Save-Module `
+                  -Name PSRule.Rules.AzureDevOps `
+                  -Repository $feedName `
+                  -Path $modulesDir `
+                  -Credential $cred `
+                  -Force `
+                  -Verbose
+
+                # 3) importa o módulo recém-baixado  
+                $moduleManifest = Get-ChildItem $modulesDir\PSRule.Rules.AzureDevOps\*.psd1 | Select-Object -Last 1
+                Import-Module $moduleManifest.FullName -Verbose
+
+                Write-Host "PSRule.Rules.AzureDevOps instalado e importado com sucesso."
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+          # - task: PowerShell@2
+          #   displayName: Register $(publishFeed) feed
+          #   inputs:
+          #     targetType: "inline"
+          #     script: |
+          #       # Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository $feedName -Verbose
+          #       Install-PSResource `
+          #         -Name PSRule.Rules.AzureDevOps `
+          #         -Repository "$(feedName)" `
+          #         -Verbose
+          #     failOnStderr: true
+          #     pwsh: true
+          #   env:
+          #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
           # 15/05
           # - task: PowerShell@2
