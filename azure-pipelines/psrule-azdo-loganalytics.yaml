@@ -36,7 +36,7 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                Write-Host "=== Início: Download & Import via PAT ==="
+                Write-Host "=== Início: Download & Import via PAT (username vazio) ==="
 
                 # Parâmetros
                 $org      = '$(azureDevOpsOrganizationName)'
@@ -49,16 +49,24 @@ stages:
                 $workDir = Join-Path $env:Pipeline_Workspace 'modules'
                 New-Item -Path $workDir -ItemType Directory -Force | Out-Null
 
-                # Header Basic Auth com PAT
-                $credPair = "AzureDevOps:$env:AZDO_PAT"
+                # Header Basic Auth com username vazio e PAT como password
+                $credPair = ":$env:AZDO_PAT"
                 $b64      = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($credPair))
                 $headers  = @{ Authorization = "Basic $b64" }
-                Write-Host "Header de autenticação preparado."
+                Write-Host "Header de autenticação preparado (username vazio)."
 
                 # 1) Obter index.json
                 $indexUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/index.json"
                 Write-Host "Buscando index.json em $indexUrl"
-                $index = Invoke-RestMethod -Uri $indexUrl -Headers $headers -ErrorAction Stop
+                try {
+                    $index = Invoke-RestMethod -Uri $indexUrl -Headers $headers -ErrorAction Stop
+                    Write-Host "index.json obtido com sucesso."
+                }
+                catch {
+                    Write-Error "Falha ao obter index.json: $($_.Exception.Message)"
+                    throw
+                }
+
                 $version = $index.versions[-1]
                 Write-Host "Versão selecionada: $version"
 
@@ -66,16 +74,41 @@ stages:
                 $nupkgUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/$version/psrule.rules.azuredevops.$version.nupkg"
                 $outFile  = Join-Path $workDir "psrule.$version.nupkg"
                 Write-Host "Baixando pacote de $nupkgUrl"
-                Invoke-RestMethod -Uri $nupkgUrl -Headers $headers -OutFile $outFile -ErrorAction Stop
-                Write-Host "Pacote salvo em $outFile"
+                try {
+                    Invoke-RestMethod -Uri $nupkgUrl -Headers $headers -OutFile $outFile -ErrorAction Stop
+                    Write-Host "Pacote salvo em $outFile"
+                }
+                catch {
+                    Write-Error "Falha ao baixar pacote: $($_.Exception.Message)"
+                    throw
+                }
 
                 # 3) Extrair e importar
                 $dest = Join-Path $workDir "PSRule.Rules.AzureDevOps\$version"
                 Write-Host "Extraindo para $dest"
-                Expand-Archive -Path $outFile -DestinationPath $dest -Force
+                try {
+                    Expand-Archive -Path $outFile -DestinationPath $dest -Force -ErrorAction Stop
+                    Write-Host "Extração concluída."
+                }
+                catch {
+                    Write-Error "Falha ao extrair pacote: $($_.Exception.Message)"
+                    throw
+                }
+
                 $psd1 = Get-ChildItem "$dest\*.psd1" | Select-Object -Last 1
+                if (-not $psd1) {
+                    throw "Manifesto (.psd1) não encontrado em '$dest'."
+                }
+
                 Write-Host "Importando módulo: $($psd1.FullName)"
-                Import-Module $psd1.FullName -Verbose
+                try {
+                    Import-Module $psd1.FullName -Verbose -ErrorAction Stop
+                    Write-Host "Importação concluída com sucesso."
+                }
+                catch {
+                    Write-Error "Falha ao importar módulo: $($_.Exception.Message)"
+                    throw
+                }
 
                 Write-Host "=== Fim: Importação concluída ==="
 
