@@ -35,46 +35,80 @@ stages:
               feedUrl: "https://pkgs.dev.azure.com/$(azureDevOpsOrganizationName)/$(project)/_packaging/$(feedName)/nuget/v3/index.json"
 
           - task: PowerShell@2
-            displayName: "Download & Import PSRule.Rules.AzureDevOps"
+            displayName: "Download & Import PSRule.Rules.AzureDevOps (with logs)"
             inputs:
               targetType: "inline"
               pwsh: true
               script: |
+                Write-Host "### INÍCIO do script de instalação do módulo PSRule.Rules.AzureDevOps ###"
+
                 # parâmetros do feed
                 $org      = '$(azureDevOpsOrganizationName)'
                 $proj     = '$(project)'
                 $feedName = '$(feedName)'
                 $feedUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3/index.json"
+                Write-Host "Feed URL: $feedUrl"
 
-                # PAT via System.AccessToken (OAuth)  
+                # PAT via System.AccessToken (OAuth)
+                Write-Host "Criando PSCredential com System.AccessToken..."
                 $pat         = "$(System.AccessToken)"
                 $secureToken = ConvertTo-SecureString $pat -AsPlainText -Force
                 $cred        = New-Object System.Management.Automation.PSCredential("AzureDevOps", $secureToken)
+                Write-Host "-> PSCredential criado com sucesso."
 
-                # 1) registra o repositório, incluindo o PSCredential  
-                if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
-                  Register-PSResourceRepository `
-                    -Name $feedName `
-                    -SourceLocation $feedUrl `
-                    -InstallationPolicy Trusted `
-                    -Credential $cred
+                # 1) registra o repositório
+                Write-Host "Registrando repositório PSResourceRepository '$feedName'..."
+                try {
+                  if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
+                    Register-PSResourceRepository `
+                      -Name $feedName `
+                      -SourceLocation $feedUrl `
+                      -InstallationPolicy Trusted `
+                      -Credential $cred
+                    Write-Host "-> Repositório '$feedName' registrado com sucesso."
+                  } else {
+                    Write-Host "-> Repositório '$feedName' já está registrado."
+                  }
+                }
+                catch {
+                  Write-Error "!!! FALHA ao registrar repositório: $($_.Exception.Message)"
+                  throw
                 }
 
-                # 2) baixa o módulo .nupkg para uma pasta temporária  
+                # 2) baixa o módulo .nupkg
                 $modulesDir = "$env:Pipeline_Workspace\_modules"
-                Save-Module `
-                  -Name PSRule.Rules.AzureDevOps `
-                  -Repository $feedName `
-                  -Path $modulesDir `
-                  -Credential $cred `
-                  -Force `
-                  -Verbose
+                Write-Host "Salvando módulo PSRule.Rules.AzureDevOps em '$modulesDir'..."
+                try {
+                  Save-Module `
+                    -Name PSRule.Rules.AzureDevOps `
+                    -Repository $feedName `
+                    -Path $modulesDir `
+                    -Credential $cred `
+                    -Force `
+                    -Verbose
+                  Write-Host "-> Módulo salvo com sucesso em '$modulesDir'."
+                }
+                catch {
+                  Write-Error "!!! FALHA ao baixar o módulo: $($_.Exception.Message)"
+                  throw
+                }
 
-                # 3) importa o módulo recém-baixado  
-                $moduleManifest = Get-ChildItem $modulesDir\PSRule.Rules.AzureDevOps\*.psd1 | Select-Object -Last 1
-                Import-Module $moduleManifest.FullName -Verbose
+                # 3) importa o módulo
+                Write-Host "Importando o módulo PSRule.Rules.AzureDevOps..."
+                try {
+                  $moduleManifest = Get-ChildItem "$modulesDir\PSRule.Rules.AzureDevOps\*.psd1" | Select-Object -Last 1
+                  if ($null -eq $moduleManifest) {
+                    throw "Não encontrou nenhum .psd1 em '$modulesDir\PSRule.Rules.AzureDevOps'."
+                  }
+                  Import-Module $moduleManifest.FullName -Verbose
+                  Write-Host "-> Módulo importado com sucesso: $($moduleManifest.FullName)"
+                }
+                catch {
+                  Write-Error "!!! FALHA ao importar o módulo: $($_.Exception.Message)"
+                  throw
+                }
 
-                Write-Host "PSRule.Rules.AzureDevOps instalado e importado com sucesso."
+                Write-Host "### FIM do script: PSRule instalado e importado ###"
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
