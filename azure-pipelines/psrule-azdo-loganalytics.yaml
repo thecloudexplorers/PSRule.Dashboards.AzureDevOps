@@ -79,6 +79,25 @@ stages:
                 Write-Host "`n-- Após registrar PSRepository --"
                 Get-PSRepository | Format-Table -AutoSize
 
+
+                Write-Host "`n=== DEBUG: Conteúdo do feed via Find-Module ==="
+                  try {
+                    $found = Find-Module -Name PSRule.Rules.AzureDevOps -Repository $feedName -ErrorAction Stop
+                    if ($found) {
+                      Write-Host "-> Find-Module encontrou:"
+                      $found | Format-Table Name, Version, Repository -AutoSize
+                    }
+                  }
+                  catch {
+                    Write-Warning "!! Find-Module NÃO encontrou nada."
+                    Write-Host "`n=== DEBUG: Dump raw search JSON ==="
+                    $queryUrl = "$feedUrl/query?q=PSRule.Rules.AzureDevOps&prerelease=false"
+                    Write-Host "Query URL: $queryUrl"
+                    $hdr = @{ Authorization = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$pat")))" }
+                    $resp = Invoke-RestMethod -Uri $queryUrl -Headers $hdr -Method Get
+                    $resp | ConvertTo-Json -Depth 5 | Write-Host
+                  }
+
                 # Agora baixa o módulo
                 $modulesDir = "$env:Pipeline_Workspace\_modules"
                 Write-Host "`nSalvando módulo em '$modulesDir'..."
