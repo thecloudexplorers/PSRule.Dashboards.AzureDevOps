@@ -36,81 +36,86 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                Write-Host "=== Início: Download & Import via PAT (username vazio) ==="
+                # =======================================================
+                # Instala PSRule.Rules.AzureDevOps via PowerShellGet + NuGet.config
+                # sem chamadas REST diretas ao flatcontainer/index.json
+                # =======================================================
 
-                # Parâmetros
+                Write-Host "=== Início da instalação PSRule.Rules.AzureDevOps ==="
+
+                # 1) Defina estes valores (ou passe como variáveis de ambiente)
                 $org      = '$(azureDevOpsOrganizationName)'
                 $proj     = '$(project)'
-                $feedName = '$(feedName)'
-                $baseUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3"
-                Write-Host "Feed base URL: $baseUrl"
+                $feed     = '$(feedName)'
+                $pat      = $env:AZDO_PAT        # PAT com scope Artifacts: Read
 
-                # Pasta de trabalho
-                $workDir = Join-Path $env:Pipeline_Workspace 'modules'
-                New-Item -Path $workDir -ItemType Directory -Force | Out-Null
+                # 2) Monte a URL do feed v3
+                $feedUrl = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feed/nuget/v3/index.json"
+                Write-Host "Feed URL: $feedUrl"
 
-                # Header Basic Auth com username vazio e PAT como password
-                $credPair = ":$env:AZDO_PAT"
-                $b64      = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($credPair))
-                $headers  = @{ Authorization = "Basic $b64" }
-                Write-Host "Header de autenticação preparado (username vazio)."
+                # 3) Crie o nuget.config para autenticar via NuGet provider
+                $nugetDir = Join-Path $env:USERPROFILE 'AppData\Roaming\NuGet'
+                New-Item -Path $nugetDir -ItemType Directory -Force | Out-Null
 
-                # 1) Obter index.json
-                $indexUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/index.json"
-                Write-Host "Buscando index.json em $indexUrl"
-                try {
-                    $index = Invoke-RestMethod -Uri $indexUrl -Headers $headers -ErrorAction Stop
-                    Write-Host "index.json obtido com sucesso."
+                $nugetConfig = @"
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <add key="$feed" value="$feedUrl" />
+                  </packageSources>
+                  <packageSourceCredentials>
+                    <$feed>
+                      <add key="Username"           value="AzureDevOps" />
+                      <add key="ClearTextPassword"  value="$pat" />
+                    </$feed>
+                  </packageSourceCredentials>
+                </configuration>
+                "@
+
+                $nugetConfigPath = Join-Path $nugetDir 'nuget.config'
+                Set-Content -Path $nugetConfigPath -Value $nugetConfig -Encoding UTF8
+                Write-Host "-> nuget.config criado em $nugetConfigPath"
+
+                # 4) Registre o repositório no PowerShellGet (PackageManagement)
+                #    — o Credential aqui serve para garantir que o PSGet reconheça o feed
+                $secureToken = ConvertTo-SecureString $pat -AsPlainText -Force
+                $cred        = [PSCredential]::new('AzureDevOps', $secureToken)
+
+                if (-not (Get-PSRepository -Name $feed -ErrorAction SilentlyContinue)) {
+                    Register-PSRepository `
+                      -Name $feed `
+                      -SourceLocation $feedUrl `
+                      -InstallationPolicy Trusted `
+                      -Credential $cred `
+                      -Verbose
+                    Write-Host "-> PSRepository '$feed' registrado."
                 }
-                catch {
-                    Write-Error "Falha ao obter index.json: $($_.Exception.Message)"
-                    throw
-                }
-
-                $version = $index.versions[-1]
-                Write-Host "Versão selecionada: $version"
-
-                # 2) Baixar pacote
-                $nupkgUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/$version/psrule.rules.azuredevops.$version.nupkg"
-                $outFile  = Join-Path $workDir "psrule.$version.nupkg"
-                Write-Host "Baixando pacote de $nupkgUrl"
-                try {
-                    Invoke-RestMethod -Uri $nupkgUrl -Headers $headers -OutFile $outFile -ErrorAction Stop
-                    Write-Host "Pacote salvo em $outFile"
-                }
-                catch {
-                    Write-Error "Falha ao baixar pacote: $($_.Exception.Message)"
-                    throw
-                }
-
-                # 3) Extrair e importar
-                $dest = Join-Path $workDir "PSRule.Rules.AzureDevOps\$version"
-                Write-Host "Extraindo para $dest"
-                try {
-                    Expand-Archive -Path $outFile -DestinationPath $dest -Force -ErrorAction Stop
-                    Write-Host "Extração concluída."
-                }
-                catch {
-                    Write-Error "Falha ao extrair pacote: $($_.Exception.Message)"
-                    throw
+                else {
+                    Write-Host "-> PSRepository '$feed' já está registrado."
                 }
 
-                $psd1 = Get-ChildItem "$dest\*.psd1" | Select-Object -Last 1
-                if (-not $psd1) {
-                    throw "Manifesto (.psd1) não encontrado em '$dest'."
+                # 5) Utilize Save-Module para baixar o pacote localmente
+                $modulesDir = Join-Path $PSScriptRoot 'modules'
+                Save-Module `
+                  -Name PSRule.Rules.AzureDevOps `
+                  -Repository $feed `
+                  -Path $modulesDir `
+                  -Credential $cred `
+                  -Force `
+                  -Verbose
+
+                Write-Host "-> Módulo salvo em $modulesDir\PSRule.Rules.AzureDevOps"
+
+                # 6) Importe o módulo
+                $manifest = Get-ChildItem "$modulesDir\PSRule.Rules.AzureDevOps\*.psd1" | Select-Object -Last 1
+                if (-not $manifest) {
+                    throw "Manifesto (.psd1) não encontrado em '$modulesDir\PSRule.Rules.AzureDevOps'."
                 }
 
-                Write-Host "Importando módulo: $($psd1.FullName)"
-                try {
-                    Import-Module $psd1.FullName -Verbose -ErrorAction Stop
-                    Write-Host "Importação concluída com sucesso."
-                }
-                catch {
-                    Write-Error "Falha ao importar módulo: $($_.Exception.Message)"
-                    throw
-                }
+                Write-Host "Importando módulo: $($manifest.FullName)"
+                Import-Module $manifest.FullName -Verbose
 
-                Write-Host "=== Fim: Importação concluída ==="
+                Write-Host "=== Fim da instalação ==="
 
               # 15/05
               # - checkout: self
