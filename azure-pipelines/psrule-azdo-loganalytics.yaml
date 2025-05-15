@@ -36,67 +36,86 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                Write-Host "=== Início: validação de SYSTEM_ACCESSTOKEN ==="
+                Write-Host "=== Início: Download & Import PSRule.Rules.AzureDevOps ==="
 
-                $token = $env:SYSTEM_ACCESSTOKEN
-                if (-not $token) {
-                  throw "SYSTEM_ACCESSTOKEN não está definido!"
+                # Parâmetros do feed
+                $org      = '$(azureDevOpsOrganizationName)'
+                $proj     = '$(project)'
+                $feedName = '$(feedName)'
+                $baseUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3"
+                Write-Host "Feed base URL: $baseUrl"
+
+                # Pasta temporária para download e extração
+                $workModules = Join-Path $env:Pipeline_Workspace 'modules'
+                Write-Host "Criando pasta de trabalho: $workModules"
+                New-Item -Path $workModules -ItemType Directory -Force | Out-Null
+
+                # Monta header Basic Auth com System.AccessToken (agora com packaging_read)
+                $pat     = $env:SYSTEM_ACCESSTOKEN
+                $credStr = "AzureDevOps:$pat"
+                $b64     = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($credStr))
+                $hdr     = @{ Authorization = "Basic $b64" }
+                Write-Host "Header de autenticação preparado."
+
+                # 1) Obter index.json (lista de versões)
+                $indexUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/index.json"
+                Write-Host "Buscando índice de versões em: $indexUrl"
+                try {
+                  $index = Invoke-RestMethod -Uri $indexUrl -Headers $hdr -ErrorAction Stop
+                  Write-Host "-> index.json obtido com sucesso."
+                }
+                catch {
+                  Write-Error "Falha ao obter index.json: $($_.Exception.Message)"
+                  throw
                 }
 
-                # 1) Decodifica o payload do JWT
-                $parts   = $token -split '\.'
-                $payload = $parts[1]
-                switch ($payload.Length % 4) {
-                  2 { $payload += '==' }
-                  3 { $payload += '=' }
+                if (-not $index.versions) {
+                  throw "Nenhuma versão encontrada no feed."
                 }
-                $json   = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($payload))
-                $claims = $json | ConvertFrom-Json
+                $version = $index.versions[-1]
+                Write-Host "-> Versão selecionada: $version"
 
-                # 2) Extrai scp e roles
-                $scopes = @()
-                if ($claims.scp) { $scopes = $claims.scp -split ' ' }
-                $roles  = @()
-                if ($claims.roles) { $roles = $claims.roles }
-
-                Write-Host ""
-                Write-Host "Scopes disponíveis:"
-                $scopes | ForEach-Object { Write-Host " - $_" }
-                Write-Host ""
-                Write-Host "Roles disponíveis:"
-                $roles | ForEach-Object { Write-Host " - $_" }
-
-                # 3) Define o que é necessário
-                $requiredScopes = @('vso.packaging_read')
-                $requiredRoles  = @('build_service')
-
-                # 4) Verifica quais estão faltando
-                $missingScopes = $requiredScopes | Where-Object { $_ -notin $scopes }
-                $missingRoles  = $requiredRoles  | Where-Object { $_ -notin $roles }
-
-                if ($missingScopes.Count -eq 0) {
-                  Write-Host "Token contém todos os scopes necessários."
-                } else {
-                  foreach ($ms in $missingScopes) {
-                    Write-Error "Permissão de scope ausente: $ms"
-                  }
+                # 2) Montar URL e baixar o pacote .nupkg
+                $nupkgUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/$version/psrule.rules.azuredevops.$version.nupkg"
+                $outFile  = Join-Path $workModules "psrule.$version.nupkg"
+                Write-Host "Baixando pacote de: $nupkgUrl"
+                try {
+                  Invoke-RestMethod -Uri $nupkgUrl -Headers $hdr -OutFile $outFile -ErrorAction Stop
+                  Write-Host "-> Pacote salvo em: $outFile"
+                }
+                catch {
+                  Write-Error "Falha ao baixar pacote: $($_.Exception.Message)"
+                  throw
                 }
 
-                if ($missingRoles.Count -eq 0) {
-                  Write-Host "Token contém todas as roles necessárias."
-                } else {
-                  foreach ($mr in $missingRoles) {
-                    Write-Error "Permissão de role ausente: $mr"
-                  }
+                # 3) Extrair o .nupkg
+                $dest = Join-Path $workModules "PSRule.Rules.AzureDevOps\$version"
+                Write-Host "Extraindo para: $dest"
+                try {
+                  Expand-Archive -Path $outFile -DestinationPath $dest -Force -ErrorAction Stop
+                  Write-Host "-> Extração concluída."
+                }
+                catch {
+                  Write-Error "Falha ao extrair pacote: $($_.Exception.Message)"
+                  throw
                 }
 
-                # 5) Se faltar qualquer permissão, falha o step com resumo
-                if ($missingScopes.Count -gt 0 -or $missingRoles.Count -gt 0) {
-                  $allMissing = ($missingScopes + $missingRoles) -join ', '
-                  throw "Permissões insuficientes: faltando [$allMissing]"
+                # 4) Importar o módulo a partir do manifesto .psd1
+                $manifest = Get-ChildItem "$dest\*.psd1" | Select-Object -Last 1
+                if (-not $manifest) {
+                  throw "Manifesto (.psd1) não encontrado em '$dest'."
+                }
+                Write-Host "Importando módulo: $($manifest.FullName)"
+                try {
+                  Import-Module $manifest.FullName -Verbose -ErrorAction Stop
+                  Write-Host "-> PSRule.Rules.AzureDevOps v$version importado com sucesso."
+                }
+                catch {
+                  Write-Error "Falha ao importar módulo: $($_.Exception.Message)"
+                  throw
                 }
 
-                Write-Host "=== Fim: sistema possui todas as permissões necessárias ==="
+                Write-Host "=== Fim: Módulo instalado e importado ==="
 
               # 15/05
               # - checkout: self
