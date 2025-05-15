@@ -46,8 +46,8 @@ stages:
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 
-                $patUser = $(patUser)
-                $patToken = $(AZDO-PAT)
+                $patUser = "$(patUser)"
+                $patToken = "$(AZDO-PAT)"
 
                 # Convert PAT to secure credential
                 $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
