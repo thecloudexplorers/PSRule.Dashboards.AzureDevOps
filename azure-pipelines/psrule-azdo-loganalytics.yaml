@@ -25,371 +25,351 @@ stages:
         displayName: Run PSRule.Rules.AzureDevOps
 
         steps:
-          # 1) Garante que $(System.AccessToken) fique disponível
+          # 1) Trazer o NuGet.exe
+          - task: NuGetToolInstaller@1
+
+          # 2) Fazer checkout com token
           - checkout: self
             persistCredentials: true
 
-          - task: NuGetToolInstaller@1
-
-          - task: NuGetAuthenticate@1
-            inputs:
-              feedUrl: "https://pkgs.dev.azure.com/$(azureDevOpsOrganizationName)/$(project)/_packaging/$(feedName)/nuget/v3/index.json"
-
+          # 3) Baixar + importar o módulo via nuget.exe
           - task: PowerShell@2
-            displayName: "Download & Import PSRule.Rules.AzureDevOps"
+            displayName: "Download & Import PSRule.Rules.AzureDevOps via nuget.exe"
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
               targetType: inline
               pwsh: true
               script: |
-                Write-Host "=== Início do script ==="
+                Write-Host "=== Iniciando download com nuget.exe ==="
 
-                # Parâmetros do feed
                 $org      = '$(azureDevOpsOrganizationName)'
                 $proj     = '$(project)'
                 $feedName = '$(feedName)'
                 $feedUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3/index.json"
-                Write-Host "Feed URL: $feedUrl"
+                $pat      = $env:SYSTEM_ACCESSTOKEN
 
-                # 1) Monta o PSCredential com o System.AccessToken
-                $pat         = $env:SYSTEM_ACCESSTOKEN
-                $secureToken = ConvertTo-SecureString $pat -AsPlainText -Force
-                $cred        = New-Object System.Management.Automation.PSCredential("AzureDevOps", $secureToken)
-                Write-Host "-> PSCredential criado."
+                # Pasta temporária para o pacote
+                $modulesDir = Join-Path $env:Pipeline_Workspace '_modules'
+                New-Item -Path $modulesDir -ItemType Directory -Force | Out-Null
+                Write-Host "-> ModulesDir: $modulesDir"
 
-                # 2) Exporta a variável que o NuGet/PowerShellGet vão realmente usar
-                $endpoints = @{
-                  endpointCredentials = @(
-                    @{
-                      endpoint = $feedUrl
-                      username = "AzureDevOps"
-                      password = $pat
-                    }
-                  )
+                # 1) Executar nuget.exe install
+                $nugetExe = & "$(Agent.ToolsDirectory)\NuGet\5.x.x\**\nuget.exe" 
+                if (-not $nugetExe) {
+                  throw "NuGet.exe não encontrado em Agent.ToolsDirectory"
                 }
-                $env:VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = ($endpoints | ConvertTo-Json -Compress)
-                Write-Host "-> VSS_NUGET_EXTERNAL_FEED_ENDPOINTS configurado."
+                Write-Host "Usando nuget: $nugetExe"
+                & $nugetExe install PSRule.Rules.AzureDevOps `
+                  -Source $feedUrl `
+                  -OutputDirectory $modulesDir `
+                  -NonInteractive `
+                  -Verbosity detailed `
+                  -Username AzureDevOps `
+                  -Password $pat `
+                  2>&1 |
+                  ForEach-Object { Write-Host "nuget> $_" }
 
-                # 3) Registra o PSRepository PASSANDO o PSCredential
-                Write-Host "`nRegistrando PSRepository '$feedName' com credencial..."
-                try {
-                  if (Get-PSRepository -Name $feedName -ErrorAction SilentlyContinue) {
-                    Unregister-PSRepository -Name $feedName -ErrorAction Continue
-                    Write-Host "-> Registro antigo removido."
-                  }
-                  Register-PSRepository `
-                    -Name $feedName `
-                    -SourceLocation $feedUrl `
-                    -InstallationPolicy Trusted `
-                    -Credential $cred `
-                    -ErrorAction Stop
-                  Write-Host "-> PSRepository '$feedName' registrado com sucesso."
+                # 2) Identificar a pasta do pacote baixado
+                $pkgFolder = Get-ChildItem $modulesDir -Directory |
+                            Where-Object Name -like 'PSRule.Rules.AzureDevOps*' |
+                            Select-Object -Last 1
+                if (-not $pkgFolder) {
+                  throw "Pacote não encontrado em $modulesDir"
                 }
-                catch {
-                  Write-Error "!!! Falha ao registrar PSRepository: $($_.Exception.Message)"
-                  throw
+                Write-Host "-> Pacote instalado em: $($pkgFolder.FullName)"
+
+                # 3) Importar o módulo via o .psd1
+                $psd1 = Join-Path $pkgFolder.FullName 'PSRule.Rules.AzureDevOps.psd1'
+                if (-not (Test-Path $psd1)) {
+                  throw ".psd1 não encontrado em $($pkgFolder.FullName)"
                 }
+                Import-Module $psd1 -Verbose
+                Write-Host "✅ Módulo importado: $psd1"
 
-                # 4) Agora tenta o Install-PSResource
-                Write-Host "`nTentando Install-PSResource..."
-                try {
-                  Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository $feedName -Verbose -ErrorAction Stop
-                  Write-Host "-> Install-PSResource concluído com sucesso."
-                }
-                catch {
-                  Write-Warning "Install-PSResource falhou: $($_.Exception.Message)"
-                  Write-Host "-> Caindo para Save-Module..."
-                  Save-Module -Name PSRule.Rules.AzureDevOps -Repository $feedName -Path "$env:Pipeline_Workspace\_modules" -Verbose -ErrorAction Stop
-                  $manifest = Get-ChildItem "$env:Pipeline_Workspace\_modules\PSRule.Rules.AzureDevOps\*.psd1" | Select-Object -Last 1
-                  Import-Module $manifest.FullName -Verbose
-                  Write-Host "-> Módulo importado: $($manifest.FullName)"
-                }
+                # 15/05
+                # - checkout: self
+                #   clean: true
+                #   persistCredentials: true
 
-                Write-Host "=== Fim do script ==="
-              # 15/05
-              # - checkout: self
-              #   clean: true
-              #   persistCredentials: true
+                # - task: NuGetToolInstaller@1
 
-              # - task: NuGetToolInstaller@1
+                # - task: NuGetAuthenticate@1
+                #   inputs:
+                #     forceReinstallCredentialProvider: true
+                #     feedUrl: "https://pkgs.dev.azure.com/$(azureDevOpsOrganizationName)/$(project)/_packaging/$(feedName)/nuget/v3/index.json"
 
-              # - task: NuGetAuthenticate@1
-              #   inputs:
-              #     forceReinstallCredentialProvider: true
-              #     feedUrl: "https://pkgs.dev.azure.com/$(azureDevOpsOrganizationName)/$(project)/_packaging/$(feedName)/nuget/v3/index.json"
+                # - task: PowerShell@2
+                #   displayName: "Download & Import PSRule.Rules.AzureDevOps (with logs)"
+                #   inputs:
+                #     targetType: "inline"
+                #     pwsh: true
+                #     script: |
+                #       Write-Host "=== Início ==="
 
-              # - task: PowerShell@2
-              #   displayName: "Download & Import PSRule.Rules.AzureDevOps (with logs)"
-              #   inputs:
-              #     targetType: "inline"
-              #     pwsh: true
-              #     script: |
-              #       Write-Host "=== Início ==="
+                #       $org      = '$(azureDevOpsOrganizationName)'
+                #       $proj     = '$(project)'
+                #       $feedName = '$(feedName)'
+                #       $feedUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3/index.json"
+                #       $pat      = "$(System.AccessToken)"
 
-              #       $org      = '$(azureDevOpsOrganizationName)'
-              #       $proj     = '$(project)'
-              #       $feedName = '$(feedName)'
-              #       $feedUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3/index.json"
-              #       $pat      = "$(System.AccessToken)"
+                #       Write-Host "Feed URL: $feedUrl"
 
-              #       Write-Host "Feed URL: $feedUrl"
+                #       # Cria PSCredential com usuário fixo AzureDevOps
+                #       $secureToken = ConvertTo-SecureString $pat -AsPlainText -Force
+                #       $cred = New-Object System.Management.Automation.PSCredential("AzureDevOps", $secureToken)
 
-              #       # Cria PSCredential com usuário fixo AzureDevOps
-              #       $secureToken = ConvertTo-SecureString $pat -AsPlainText -Force
-              #       $cred = New-Object System.Management.Automation.PSCredential("AzureDevOps", $secureToken)
+                #       Write-Host "`n-- Antes de registrar PSRepository --"
+                #       Get-PSRepository | Format-Table -AutoSize
 
-              #       Write-Host "`n-- Antes de registrar PSRepository --"
-              #       Get-PSRepository | Format-Table -AutoSize
+                #       Write-Host "`nRegistrando PSRepository '$feedName'..."
+                #       try {
+                #         # Se já existir, remove e registra de novo
+                #         if (Get-PSRepository -Name $feedName -ErrorAction SilentlyContinue) {
+                #           Unregister-PSRepository -Name $feedName -ErrorAction Stop
+                #           Write-Host "-> Removido registro antigo."
+                #         }
+                #         Register-PSRepository `
+                #           -Name $feedName `
+                #           -SourceLocation $feedUrl `
+                #           -InstallationPolicy Trusted `
+                #           -Credential $cred `
+                #           -ErrorAction Stop
+                #         Write-Host "-> PSRepository registrado."
+                #       } catch {
+                #         Write-Error "!!! Erro ao registrar PSRepository: $($_.Exception.Message)"
+                #         throw
+                #       }
 
-              #       Write-Host "`nRegistrando PSRepository '$feedName'..."
-              #       try {
-              #         # Se já existir, remove e registra de novo
-              #         if (Get-PSRepository -Name $feedName -ErrorAction SilentlyContinue) {
-              #           Unregister-PSRepository -Name $feedName -ErrorAction Stop
-              #           Write-Host "-> Removido registro antigo."
-              #         }
-              #         Register-PSRepository `
-              #           -Name $feedName `
-              #           -SourceLocation $feedUrl `
-              #           -InstallationPolicy Trusted `
-              #           -Credential $cred `
-              #           -ErrorAction Stop
-              #         Write-Host "-> PSRepository registrado."
-              #       } catch {
-              #         Write-Error "!!! Erro ao registrar PSRepository: $($_.Exception.Message)"
-              #         throw
-              #       }
+                #       Write-Host "`n-- Após registrar PSRepository --"
+                #       Get-PSRepository | Format-Table -AutoSize
 
-              #       Write-Host "`n-- Após registrar PSRepository --"
-              #       Get-PSRepository | Format-Table -AutoSize
+                #       Write-Host "`n=== DEBUG: Conteúdo do feed via Find-Module ==="
+                #         try {
+                #           $found = Find-Module -Name PSRule.Rules.AzureDevOps -Repository $feedName -ErrorAction Stop
+                #           if ($found) {
+                #             Write-Host "-> Find-Module encontrou:"
+                #             $found | Format-Table Name, Version, Repository -AutoSize
+                #           }
+                #         }
+                #         catch {
+                #           Write-Warning "!! Find-Module NÃO encontrou nada."
+                #           Write-Host "`n=== DEBUG: Dump raw search JSON ==="
+                #           $queryUrl = "$feedUrl/query?q=PSRule.Rules.AzureDevOps&prerelease=false"
+                #           Write-Host "Query URL: $queryUrl"
+                #           $hdr = @{ Authorization = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$pat")))" }
+                #           $resp = Invoke-RestMethod -Uri $queryUrl -Headers $hdr -Method Get
+                #           $resp | ConvertTo-Json -Depth 5 | Write-Host
+                #         }
 
-              #       Write-Host "`n=== DEBUG: Conteúdo do feed via Find-Module ==="
-              #         try {
-              #           $found = Find-Module -Name PSRule.Rules.AzureDevOps -Repository $feedName -ErrorAction Stop
-              #           if ($found) {
-              #             Write-Host "-> Find-Module encontrou:"
-              #             $found | Format-Table Name, Version, Repository -AutoSize
-              #           }
-              #         }
-              #         catch {
-              #           Write-Warning "!! Find-Module NÃO encontrou nada."
-              #           Write-Host "`n=== DEBUG: Dump raw search JSON ==="
-              #           $queryUrl = "$feedUrl/query?q=PSRule.Rules.AzureDevOps&prerelease=false"
-              #           Write-Host "Query URL: $queryUrl"
-              #           $hdr = @{ Authorization = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$pat")))" }
-              #           $resp = Invoke-RestMethod -Uri $queryUrl -Headers $hdr -Method Get
-              #           $resp | ConvertTo-Json -Depth 5 | Write-Host
-              #         }
+                #       # Agora baixa o módulo
+                #       $modulesDir = "$env:Pipeline_Workspace\_modules"
+                #       Write-Host "`nSalvando módulo em '$modulesDir'..."
+                #       try {
+                #         Save-Module `
+                #           -Name PSRule.Rules.AzureDevOps `
+                #           -Repository $feedName `
+                #           -Path $modulesDir `
+                #           -Credential $cred `
+                #           -Force `
+                #           -Verbose
+                #         Write-Host "-> Módulo salvo."
+                #       } catch {
+                #         Write-Error "!!! Erro ao Save-Module: $($_.Exception.Message)"
+                #         throw
+                #       }
 
-              #       # Agora baixa o módulo
-              #       $modulesDir = "$env:Pipeline_Workspace\_modules"
-              #       Write-Host "`nSalvando módulo em '$modulesDir'..."
-              #       try {
-              #         Save-Module `
-              #           -Name PSRule.Rules.AzureDevOps `
-              #           -Repository $feedName `
-              #           -Path $modulesDir `
-              #           -Credential $cred `
-              #           -Force `
-              #           -Verbose
-              #         Write-Host "-> Módulo salvo."
-              #       } catch {
-              #         Write-Error "!!! Erro ao Save-Module: $($_.Exception.Message)"
-              #         throw
-              #       }
+                #       # Finalmente importa
+                #       Write-Host "`nImportando módulo..."
+                #       try {
+                #         $manifest = Get-ChildItem "$modulesDir\PSRule.Rules.AzureDevOps\*.psd1" | Select-Object -Last 1
+                #         Import-Module $manifest.FullName -Verbose
+                #         Write-Host "-> Importado: $($manifest.FullName)"
+                #       } catch {
+                #         Write-Error "!!! Erro ao importar: $($_.Exception.Message)"
+                #         throw
+                #       }
 
-              #       # Finalmente importa
-              #       Write-Host "`nImportando módulo..."
-              #       try {
-              #         $manifest = Get-ChildItem "$modulesDir\PSRule.Rules.AzureDevOps\*.psd1" | Select-Object -Last 1
-              #         Import-Module $manifest.FullName -Verbose
-              #         Write-Host "-> Importado: $($manifest.FullName)"
-              #       } catch {
-              #         Write-Error "!!! Erro ao importar: $($_.Exception.Message)"
-              #         throw
-              #       }
+                #       Write-Host "=== Fim ==="
+                #   env:
+                #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-              #       Write-Host "=== Fim ==="
-              #   env:
-              #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                # - task: PowerShell@2
+                #   displayName: Register $(publishFeed) feed
+                #   inputs:
+                #     targetType: "inline"
+                #     script: |
+                #       # Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository $feedName -Verbose
+                #       Install-PSResource `
+                #         -Name PSRule.Rules.AzureDevOps `
+                #         -Repository "$(feedName)" `
+                #         -Verbose
+                #     failOnStderr: true
+                #     pwsh: true
+                #   env:
+                #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-              # - task: PowerShell@2
-              #   displayName: Register $(publishFeed) feed
-              #   inputs:
-              #     targetType: "inline"
-              #     script: |
-              #       # Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository $feedName -Verbose
-              #       Install-PSResource `
-              #         -Name PSRule.Rules.AzureDevOps `
-              #         -Repository "$(feedName)" `
-              #         -Verbose
-              #     failOnStderr: true
-              #     pwsh: true
-              #   env:
-              #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                # 15/05
+                # - task: PowerShell@2
+                #   displayName: Register $(publishFeed) feed
+                #   inputs:
+                #     targetType: "inline"
+                #     script: |
+                #       # Ensure TLS 1.2 for secure connection
+                #       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-              # 15/05
-              # - task: PowerShell@2
-              #   displayName: Register $(publishFeed) feed
-              #   inputs:
-              #     targetType: "inline"
-              #     script: |
-              #       # Ensure TLS 1.2 for secure connection
-              #       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                #       $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                #       $project = "$(project)"
+                #       $feedName = "$(feedName)"
 
-              #       $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
-              #       $project = "$(project)"
-              #       $feedName = "$(feedName)"
+                #       # Build feed URL (NuGet v3 for PSResourceGet)
+                #       $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
 
-              #       # Build feed URL (NuGet v3 for PSResourceGet)
-              #       $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
+                #       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-              #       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                #       $patUser = "$(patUser)"
+                #       $patToken = "$(AZDO-PAT)"
 
-              #       $patUser = "$(patUser)"
-              #       $patToken = "$(AZDO-PAT)"
+                #       # Convert PAT to secure credential
+                #       $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
+                #       $credential = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
 
-              #       # Convert PAT to secure credential
-              #       $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
-              #       $credential = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
+                #       # Register the repository if not already registered
+                #       if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
+                #           Register-PSResourceRepository -Name $feedName -Uri $feedUrl -Trusted -Credential $credential
+                #       }
 
-              #       # Register the repository if not already registered
-              #       if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
-              #           Register-PSResourceRepository -Name $feedName -Uri $feedUrl -Trusted -Credential $credential
-              #       }
+                #       #TODO: Break into new step
+                #       # Generate a new token
+                #       $tenantId = "$(tenantId)"
+                #       $clientId = "$(clientId)"
+                #       $clientSecret = "$(clientSecret)"
 
-              #       #TODO: Break into new step
-              #       # Generate a new token
-              #       $tenantId = "$(tenantId)"
-              #       $clientId = "$(clientId)"
-              #       $clientSecret = "$(clientSecret)"
+                #       $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
 
-              #       $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
+                #       Write-Host "Creating bearer token"
+                #       $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                #           client_id     = $clientId
+                #           client_secret = $clientSecret
+                #           scope         = "$scopeId/.default"
+                #           grant_type    = "client_credentials"
+                #       }
+                #       $newBearerToken = $tokenResponse.access_token
 
-              #       Write-Host "Creating bearer token"
-              #       $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
-              #           client_id     = $clientId
-              #           client_secret = $clientSecret
-              #           scope         = "$scopeId/.default"
-              #           grant_type    = "client_credentials"
-              #       }
-              #       $newBearerToken = $tokenResponse.access_token
+                #       $nugetConfig = @"
+                #         <?xml version="1.0" encoding="utf-8"?>
+                #         <configuration>
+                #           <packageSources>
+                #             <add key="$feedName" value="$feedUrl" />
+                #           </packageSources>
+                #           <packageSourceCredentials>
+                #             <MyFeed>
+                #               <add key="Username" value="AzureDevOps" />
+                #               <add key="ClearTextPassword" value="$patToken" />
+                #             </MyFeed>
+                #           </packageSourceCredentials>
+                #         </configuration>
+                #       "@
 
-              #       $nugetConfig = @"
-              #         <?xml version="1.0" encoding="utf-8"?>
-              #         <configuration>
-              #           <packageSources>
-              #             <add key="$feedName" value="$feedUrl" />
-              #           </packageSources>
-              #           <packageSourceCredentials>
-              #             <MyFeed>
-              #               <add key="Username" value="AzureDevOps" />
-              #               <add key="ClearTextPassword" value="$patToken" />
-              #             </MyFeed>
-              #           </packageSourceCredentials>
-              #         </configuration>
-              #       "@
+                #       $nugetConfig | Out-File -FilePath "$env:USERPROFILE\AppData\Roaming\NuGet\nuget.config" -Encoding utf8
 
-              #       $nugetConfig | Out-File -FilePath "$env:USERPROFILE\AppData\Roaming\NuGet\nuget.config" -Encoding utf8
+                #       Write-Host "Installing PowerShell module"
 
-              #       Write-Host "Installing PowerShell module"
+                #       Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$feedName" -Credential $credential  -verbose
 
-              #       Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$feedName" -Credential $credential  -verbose
+                #       # Write-Host "Connect to Azure DevOps"
+                #       # Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
 
-              #       # Write-Host "Connect to Azure DevOps"
-              #       # Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
+                #       # Write-Host "Exporting Azure DevOps data"
+                #       # Export-AzDevOpsOrganizationRuleData `
+                #       #   -OutputPath $env:EXPORT_DIRECTORY `
+                #       #   -Organization $azureDevOpsOrganizationName `
+                #       #   -OrganizationId $azureDevOpsOrganizationId
+                #     failOnStderr: true
+                #     pwsh: true
+                #   env:
+                #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-              #       # Write-Host "Exporting Azure DevOps data"
-              #       # Export-AzDevOpsOrganizationRuleData `
-              #       #   -OutputPath $env:EXPORT_DIRECTORY `
-              #       #   -Organization $azureDevOpsOrganizationName `
-              #       #   -OrganizationId $azureDevOpsOrganizationId
-              #     failOnStderr: true
-              #     pwsh: true
-              #   env:
-              #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                # Old
 
-              # Old
+                # - task: PowerShell@2
+                #   displayName: Install PowerShell Modules
+                #   inputs:
+                #     targetType: "inline"
+                #     script: |
+                #       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-              # - task: PowerShell@2
-              #   displayName: Install PowerShell Modules
-              #   inputs:
-              #     targetType: "inline"
-              #     script: |
-              #       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                #       Write-Host "Creating credentials"
+                #       $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
+                #       $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token)
 
-              #       Write-Host "Creating credentials"
-              #       $token = $env:SYSTEM_ACCESSTOKEN | ConvertTo-SecureString -AsPlainText -Force
-              #       $credential = New-Object System.Management.Automation.PSCredential($env:SYSTEM_ACCESSTOKEN, $token)
+                #       Write-Host "Remove existing PSRule.Rules.AzureDevOps module"
+                #       Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
 
-              #       Write-Host "Remove existing PSRule.Rules.AzureDevOps module"
-              #       Remove-Module -Name PSRule.Rules.AzureDevOps -Force -ErrorAction SilentlyContinue
+                #       Write-Host "Install Modules"
+                #       Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential -RequiredVersion 0.5.1
+                #       Install-Module -Name PSRule.Monitor -Repository PSGalleryUpstream -Force -Credential $credential
 
-              #       Write-Host "Install Modules"
-              #       Install-Module -Name PSRule.Rules.AzureDevOps -Repository PSGalleryUpstream -Force -Credential $credential -RequiredVersion 0.5.1
-              #       Install-Module -Name PSRule.Monitor -Repository PSGalleryUpstream -Force -Credential $credential
+                #       Write-Host "Import modules"
+                #       Import-Module PSRule.Monitor
+                #       Import-Module PSRule.Rules.AzureDevOps
+                #   env:
+                #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-              #       Write-Host "Import modules"
-              #       Import-Module PSRule.Monitor
-              #       Import-Module PSRule.Rules.AzureDevOps
-              #   env:
-              #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                # - task: PowerShell@2
+                #   displayName: Export Azure DevOps Data
+                #   inputs:
+                #     targetType: "inline"
+                #     errorActionPreference: continue
+                #     script: |
+                #       $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                #       $azureDevOpsOrganizationId = "$(azureDevOpsOrganizationId)"
 
-              # - task: PowerShell@2
-              #   displayName: Export Azure DevOps Data
-              #   inputs:
-              #     targetType: "inline"
-              #     errorActionPreference: continue
-              #     script: |
-              #       $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
-              #       $azureDevOpsOrganizationId = "$(azureDevOpsOrganizationId)"
+                #       # Generates a new bearer token for Azure DevOps API
+                #       $tenantId = '$(tenantId)'
+                #       $clientId = '$(clientId)'
+                #       $clientSecret = '$(clientSecret)'
 
-              #       # Generates a new bearer token for Azure DevOps API
-              #       $tenantId = '$(tenantId)'
-              #       $clientId = '$(clientId)'
-              #       $clientSecret = '$(clientSecret)'
+                #       # Azure DevOps API Scope ID - It never changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
+                #       $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
 
-              #       # Azure DevOps API Scope ID - It never changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
-              #       $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
+                #       $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                #           client_id     = $clientId
+                #           client_secret = $clientSecret
+                #           scope         = "$scopeId/.default"
+                #           grant_type    = "client_credentials"
+                #       }
+                #       $bearerToken = $tokenResponse.access_token
+                #       Write-Host "Bearer Token: [$bearerToken]"
 
-              #       $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
-              #           client_id     = $clientId
-              #           client_secret = $clientSecret
-              #           scope         = "$scopeId/.default"
-              #           grant_type    = "client_credentials"
-              #       }
-              #       $bearerToken = $tokenResponse.access_token
-              #       Write-Host "Bearer Token: [$bearerToken]"
+                #       # Connect to Azure DevOps
+                #       Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
 
-              #       # Connect to Azure DevOps
-              #       Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
+                #       Export-AzDevOpsOrganizationRuleData `
+                #         -OutputPath $env:EXPORT_DIRECTORY `
+                #         -Organization $azureDevOpsOrganizationName `
+                #         -OrganizationId $azureDevOpsOrganizationId
+                #   env:
+                #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                #     EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
 
-              #       Export-AzDevOpsOrganizationRuleData `
-              #         -OutputPath $env:EXPORT_DIRECTORY `
-              #         -Organization $azureDevOpsOrganizationName `
-              #         -OrganizationId $azureDevOpsOrganizationId
-              #   env:
-              #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-              #     EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
+                # - task: PublishPipelineArtifact@1
+                #   displayName: Publishing Azure DevOps Exports & Reports
+                #   inputs:
+                #     targetPath: $(Build.ArtifactStagingDirectory)/export
+                #     artifactName: AzureDevOpsData
 
-              # - task: PublishPipelineArtifact@1
-              #   displayName: Publishing Azure DevOps Exports & Reports
-              #   inputs:
-              #     targetPath: $(Build.ArtifactStagingDirectory)/export
-              #     artifactName: AzureDevOpsData
-
-              # - task: PowerShell@2
-              #   displayName: Analyse Azure DevOps Data
-              #   inputs:
-              #     targetType: "inline"
-              #     errorActionPreference: continue
-              #     script: |
-              #       $result = Invoke-PSRule `
-              #         -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-              #         -InputPath $env:EXPORT_DIRECTORY `
-              #         -Format Detect `
-              #         -Culture en
-              #       $result -Verbose | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
-              #   env:
-              #     EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
+                # - task: PowerShell@2
+                #   displayName: Analyse Azure DevOps Data
+                #   inputs:
+                #     targetType: "inline"
+                #     errorActionPreference: continue
+                #     script: |
+                #       $result = Invoke-PSRule `
+                #         -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
+                #         -InputPath $env:EXPORT_DIRECTORY `
+                #         -Format Detect `
+                #         -Culture en
+                #       $result -Verbose | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+                #   env:
+                #     EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
