@@ -79,6 +79,7 @@ stages:
                 $modulesDir = "$env:Pipeline_Workspace\_modules"
                 Write-Host "Salvando módulo PSRule.Rules.AzureDevOps em '$modulesDir'..."
                 try {
+                  Get-PSRepository 
                   Save-Module `
                     -Name PSRule.Rules.AzureDevOps `
                     -Repository $feedName `
