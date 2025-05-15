@@ -27,10 +27,8 @@ stages:
           - checkout: self
             clean: true
 
-          # 1) Garante que haja um NuGet CLI no agente
           - task: NuGetToolInstaller@1
 
-          # 2) Injeta o PAT em todas as fontes configuradas no pipeline (incluindo feeds privados)
           - task: NuGetAuthenticate@1
             inputs:
               forceReinstallCredentialProvider: true
