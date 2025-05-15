@@ -53,10 +53,10 @@ stages:
                 $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
                 $credential = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
 
-                # Register the repository if not already registered
-                if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
-                    Register-PSResourceRepository -Name $feedName -Uri $feedUrl -Trusted -Credential $credential
-                }
+                # # Register the repository if not already registered
+                # if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
+                #     Register-PSResourceRepository -Name $feedName -Uri $feedUrl -Trusted -Credential $credential
+                # }
 
                 #TODO: Break into new step
                 # Generate a new token
@@ -76,8 +76,27 @@ stages:
                 }
                 $newBearerToken = $tokenResponse.access_token 
 
-                Write-Host "Installing PowerShell module"                
-                Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$feedName" -Credential $credential  -verbose
+                $nugetConfig = @"
+                  <?xml version="1.0" encoding="utf-8"?>
+                  <configuration>
+                    <packageSources>
+                      <add key="MyFeed" value="$feedUrl" />
+                    </packageSources>
+                    <packageSourceCredentials>
+                      <MyFeed>
+                        <add key="Username" value="AzureDevOps" />
+                        <add key="ClearTextPassword" value="$patToken" />
+                      </MyFeed>
+                    </packageSourceCredentials>
+                  </configuration>
+                "@
+
+                $nugetConfig | Out-File -FilePath "$env:USERPROFILE\AppData\Roaming\NuGet\nuget.config" -Encoding utf8
+
+
+                Write-Host "Installing PowerShell module"             
+                Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository MyFeed -Verbose   
+                # Install-PSResource -Name PSRule.Rules.AzureDevOps -Repository "$feedName" -Credential $credential  -verbose
 
                 # Write-Host "Connect to Azure DevOps"
                 # Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
