@@ -80,7 +80,7 @@ stages:
                   <?xml version="1.0" encoding="utf-8"?>
                   <configuration>
                     <packageSources>
-                      <add key="MyFeed" value="$feedUrl" />
+                      <add key="$feedName" value="$feedUrl" />
                     </packageSources>
                     <packageSourceCredentials>
                       <MyFeed>
