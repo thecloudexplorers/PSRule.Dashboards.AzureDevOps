@@ -29,60 +29,43 @@ stages:
             persistCredentials: true
 
           - task: PowerShell@2
-            displayName: "Download & Import via REST (PAT packaging)"
+            displayName: "Debug SYSTEM_ACCESSTOKEN scopes"
             env:
-              AZDO_PAT: $(AZDO-PAT)
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
               targetType: inline
               pwsh: true
               script: |
-                Write-Host "=== Início ==="
+                Write-Host "=== Decodificando claims do SYSTEM_ACCESSTOKEN ==="
+                $token = $env:SYSTEM_ACCESSTOKEN
+                if (-not $token) { throw "SYSTEM_ACCESSTOKEN não está definido!" }
 
-                $org      = '$(azureDevOpsOrganizationName)'
-                $proj     = '$(project)'
-                $feedName = '$(feedName)'
-                $baseUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3"
+                # separa as partes do JWT
+                $parts = $token -split '\.'
+                if ($parts.Count -lt 2) { throw "Token não está no formato JWT esperado." }
 
-                Write-Host "Feed base URL: $baseUrl"
+                # pega a parte de payload (claims)
+                $payload = $parts[1]
 
-                # 1) Prepara o header corretamente com usuário 'AzureDevOps'
-                $pat     = $env:AZDO_PAT
-                $credStr = "AzureDevOps:$pat"
-                $bytes   = [Text.Encoding]::ASCII.GetBytes($credStr)
-                $b64     = [Convert]::ToBase64String($bytes)
-                $hdr     = @{ Authorization = "Basic $b64" }
-                Write-Host "-> Header preparado com AzureDevOps:<PAT>"
-
-                # 2) Pega índice de versões
-                $indexUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/index.json"
-                Write-Host "Buscando index.json em $indexUrl"
-                try {
-                  $index = Invoke-RestMethod -Uri $indexUrl -Headers $hdr -ErrorAction Stop
-                }
-                catch {
-                  Write-Error "Falha ao obter index.json: $($_.Exception.Message)"
-                  throw
+                # corrige padding Base64
+                switch ($payload.Length % 4) {
+                  2 { $payload += '==' }
+                  3 { $payload += '=' }
                 }
 
-                $version = $index.versions[-1]
-                Write-Host "-> Versão encontrada: $version"
+                # decodifica e converte para objeto
+                $json = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($payload))
+                $claims = $json | ConvertFrom-Json
 
-                # 3) Baixa o .nupkg
-                $nupkgUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/$version/psrule.rules.azuredevops.$version.nupkg"
-                $outFile  = Join-Path $env:Pipeline_Workspace "psrule.$version.nupkg"
-                Write-Host "Baixando pacote: $nupkgUrl"
-                Invoke-RestMethod -Uri $nupkgUrl -Headers $hdr -OutFile $outFile -ErrorAction Stop
-                Write-Host "-> Pacote salvo em $outFile"
+                # exibe os campos de interesse
+                Write-Host "`n---- Claims extras ----"
+                $claims | Select-Object exp, nbf, iat, iss, aud, scp, roles, unique_name, sub | Format-List
 
-                # 4) Extrai e importa
-                $dest = Join-Path $env:Pipeline_Workspace "psrule_mod\$version"
-                Write-Host "Extraindo para $dest"
-                Expand-Archive -Path $outFile -DestinationPath $dest -Force
-                $manifest = Get-ChildItem "$dest\*.psd1" | Select-Object -Last 1
-                Write-Host "Importando $($manifest.FullName)"
-                Import-Module $manifest.FullName -Verbose
+                # exibe todos os claims caso queira explorar
+                Write-Host "`n---- Todos os claims ----"
+                $claims | Format-List
 
-                Write-Host "=== Fim ==="
+                Write-Host "=== FIM da decodificação ==="
 
               # 15/05
               # - checkout: self
