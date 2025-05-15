@@ -29,94 +29,60 @@ stages:
             persistCredentials: true
 
           - task: PowerShell@2
-            displayName: "Download & Import PSRule.Rules.AzureDevOps via REST"
+            displayName: "Download & Import via REST (PAT packaging)"
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              AZDO_PAT: $(AZDO-PAT)
             inputs:
               targetType: inline
               pwsh: true
               script: |
-                Write-Host "=== INÍCIO: Download & Import via REST ==="
+                Write-Host "=== Início ==="
 
-                # 1) Parâmetros do feed
                 $org      = '$(azureDevOpsOrganizationName)'
                 $proj     = '$(project)'
                 $feedName = '$(feedName)'
                 $baseUrl  = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feedName/nuget/v3"
+
                 Write-Host "Feed base URL: $baseUrl"
 
-                # 2) Pasta para baixar e extrair o módulo
-                $workModules = Join-Path $env:Pipeline_Workspace 'modules'
-                Write-Host "Criando pasta de módulos: $workModules"
-                New-Item -Path $workModules -ItemType Directory -Force | Out-Null
+                # 1) Prepara o header corretamente com usuário 'AzureDevOps'
+                $pat     = $env:AZDO_PAT
+                $credStr = "AzureDevOps:$pat"
+                $bytes   = [Text.Encoding]::ASCII.GetBytes($credStr)
+                $b64     = [Convert]::ToBase64String($bytes)
+                $hdr     = @{ Authorization = "Basic $b64" }
+                Write-Host "-> Header preparado com AzureDevOps:<PAT>"
 
-                # 3) Prepara autenticação Basic via OAuth token
-                $pat   = $env:SYSTEM_ACCESSTOKEN
-                $b64   = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$pat"))
-                $hdr   = @{ Authorization = "Basic $b64" }
-                Write-Host "-> Header de autenticação preparado."
-
-                # 4) Descobre todas as versões disponíveis
+                # 2) Pega índice de versões
                 $indexUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/index.json"
-                Write-Host "Buscando índice de versões em: $indexUrl"
+                Write-Host "Buscando index.json em $indexUrl"
                 try {
                   $index = Invoke-RestMethod -Uri $indexUrl -Headers $hdr -ErrorAction Stop
                 }
                 catch {
-                  Write-Error "!!! Falha ao obter index.json: $($_.Exception.Message)"
+                  Write-Error "Falha ao obter index.json: $($_.Exception.Message)"
                   throw
                 }
 
-                if (-not $index.versions) {
-                  throw "Nenhuma versão encontrada no feed."
-                }
                 $version = $index.versions[-1]
-                Write-Host "-> Versão mais recente detectada: $version"
+                Write-Host "-> Versão encontrada: $version"
 
-                # 5) Monta URL do pacote
+                # 3) Baixa o .nupkg
                 $nupkgUrl = "$baseUrl/flatcontainer/psrule.rules.azuredevops/$version/psrule.rules.azuredevops.$version.nupkg"
-                Write-Host "URL do pacote: $nupkgUrl"
+                $outFile  = Join-Path $env:Pipeline_Workspace "psrule.$version.nupkg"
+                Write-Host "Baixando pacote: $nupkgUrl"
+                Invoke-RestMethod -Uri $nupkgUrl -Headers $hdr -OutFile $outFile -ErrorAction Stop
+                Write-Host "-> Pacote salvo em $outFile"
 
-                # 6) Baixa o .nupkg
-                $outFile = Join-Path $workModules "PSRule.Rules.AzureDevOps.$version.nupkg"
-                Write-Host "Baixando pacote para: $outFile"
-                try {
-                  Invoke-RestMethod -Uri $nupkgUrl -Headers $hdr -OutFile $outFile -ErrorAction Stop
-                  Write-Host "-> Pacote baixado com sucesso."
-                }
-                catch {
-                  Write-Error "!!! Falha ao baixar .nupkg: $($_.Exception.Message)"
-                  throw
-                }
-
-                # 7) Extrai o conteúdo
-                $dest = Join-Path $workModules "PSRule.Rules.AzureDevOps\$version"
-                Write-Host "Extraindo para: $dest"
-                try {
-                  Expand-Archive -Path $outFile -DestinationPath $dest -Force -ErrorAction Stop
-                  Write-Host "-> Extração concluída."
-                }
-                catch {
-                  Write-Error "!!! Falha ao extrair pacote: $($_.Exception.Message)"
-                  throw
-                }
-
-                # 8) Importa o módulo
+                # 4) Extrai e importa
+                $dest = Join-Path $env:Pipeline_Workspace "psrule_mod\$version"
+                Write-Host "Extraindo para $dest"
+                Expand-Archive -Path $outFile -DestinationPath $dest -Force
                 $manifest = Get-ChildItem "$dest\*.psd1" | Select-Object -Last 1
-                if (-not $manifest) {
-                  throw "Não achei o manifesto .psd1 em '$dest'."
-                }
-                Write-Host "Importando módulo a partir de: $($manifest.FullName)"
-                try {
-                  Import-Module $manifest.FullName -Verbose -ErrorAction Stop
-                  Write-Host "-> PSRule.Rules.AzureDevOps v$version importado com sucesso."
-                }
-                catch {
-                  Write-Error "!!! Falha ao importar módulo: $($_.Exception.Message)"
-                  throw
-                }
+                Write-Host "Importando $($manifest.FullName)"
+                Import-Module $manifest.FullName -Verbose
 
-                Write-Host "=== FIM: módulo instalado e importado ==="
+                Write-Host "=== Fim ==="
 
               # 15/05
               # - checkout: self
