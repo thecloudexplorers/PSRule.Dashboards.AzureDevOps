@@ -26,6 +26,7 @@ stages:
         steps:
           - checkout: self
             clean: true
+            persistCredentials: true
 
           - task: NuGetToolInstaller@1
 
