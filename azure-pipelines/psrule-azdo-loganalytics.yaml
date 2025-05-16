@@ -88,9 +88,12 @@ stages:
 
                 Get-SecretInfo
 
-                if (-not(Get-PSResourceRepository -Name "PowershellPSResourceRepository" -ErrorAction SilentlyContinue)){
-                  Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
+                if ((Get-PSResourceRepository -Name "PowershellPSResourceRepository" -ErrorAction SilentlyContinue)){
+                  Write-Host "Removing existing repo PowershellPSResourceRepository"
+                  Unregister-PSResourceRepository -Name "PowershellPSResourceRepository"
                 }
+
+                Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
 
                 # Find-PSResource -Name "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
 
