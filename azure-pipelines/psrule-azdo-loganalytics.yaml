@@ -87,7 +87,7 @@ stages:
 
                 $psResourceRepository = "PowershellPSResourceRepository"
 
-                if ((Get-PSResourceRepository -Name $psResourceRepository -ErrorAction SilentlyContinue)){
+                if (-not(Get-PSResourceRepository -Name $psResourceRepository -ErrorAction SilentlyContinue)){
                   Register-PSResourceRepository -Name $psResourceRepository -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
                 }
 
