@@ -35,6 +35,9 @@ stages:
             inputs:
               targetType: inline
               pwsh: true
+              env:
+                SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
               script: |
                 # Ensure TLS 1.2 for secure connection
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -97,7 +100,7 @@ stages:
 
                 # Find-PSResource -Name "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
 
-                Install-PSResource "PSRule.Rules.AzureDevOps" -Credential $credentials
+                Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
                 Import-Module "PSRule.Rules.AzureDevOps"
 
                 Write-Host "Exporting"
@@ -125,7 +128,7 @@ stages:
                 Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
 
                 Export-AzDevOpsOrganizationRuleData `
-                  -OutputPath $env:EXPORT_DIRECTORY `
+                  -OutputPath "$(Build.ArtifactStagingDirectory)/export" `
                   -Organization $azureDevOpsOrganizationName `
                   -OrganizationId $azureDevOpsOrganizationId
 
