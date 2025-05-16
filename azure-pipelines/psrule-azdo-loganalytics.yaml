@@ -53,29 +53,15 @@ stages:
 
                 # Convert PAT to secure credential
                 $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
-                $credential = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
+                $credentials = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
 
-                # Register the repository if not already registered
-                if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
-                    Register-PSResourceRepository -Name $feedName -Uri $feedUrl -Trusted -Credential $credential
-                }
+                Register-SecretVault -Name "MySecretVault" -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
 
-                #TODO: Break into new step
-                # Generate a new token
-                $tenantId = "$(tenantId)"
-                $clientId = "$(clientId)"
-                $clientSecret = "$(clientSecret)"
+                Set-Secret -Name "MyCredential" -Secret $credentials -Vault "MySecretVault"
 
-                $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
+                $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('MySecretVault', 'MyCredential')
 
-                Write-Host "Creating bearer token"
-                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
-                    client_id     = $clientId
-                    client_secret = $clientSecret
-                    scope         = "$scopeId/.default"
-                    grant_type    = "client_credentials"
-                }
-                $newBearerToken = $tokenResponse.access_token
+                Get-SecretInfo
 
   # # Ensure TLS 1.2 for secure connection
   # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
