@@ -71,9 +71,9 @@ stages:
                   Write-Host "Vault [$secretVaultName] already exists."
                 }
                 Write-Host "Setting secret"
-                Set-Secret -Name "MyCredential" -Secret $credentials -Vault "MySecretVault"
+                Set-Secret -Name "MyCredential" -Secret $credentials -Vault $secretVaultName
 
-                $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('MySecretVault', 'MyCredential')
+                $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new($secretVaultName, 'MyCredential')
 
                 Get-SecretInfo
 
