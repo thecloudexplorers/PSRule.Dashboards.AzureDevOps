@@ -52,6 +52,8 @@ stages:
                 Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force
 
+                Install-Module -Name 'PSRule' -Repository PSGallery -Scope CurrentUser
+
                 Import-Module Microsoft.PowerShell.SecretStore
                 Import-Module Microsoft.PowerShell.SecretManagement
                 Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
