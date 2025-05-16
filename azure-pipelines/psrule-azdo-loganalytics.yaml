@@ -71,6 +71,7 @@ stages:
                 }
 
                 Register-SecretVault -Name $secretVaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
+                Set-SecretStoreConfiguration -Authentication None
 
                 Write-Host "Setting secret"
                 Set-Secret -Name "MyCredential" -Secret $credentials -Vault $secretVaultName
