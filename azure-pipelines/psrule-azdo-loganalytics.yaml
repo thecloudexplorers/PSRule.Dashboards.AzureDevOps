@@ -99,6 +99,7 @@ stages:
 
                 Install-PSResource "PSRule.Rules.AzureDevOps" -Credential $credentials
 
+                Write-Host "Connecting to Azure DevOps"
                 Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
 
                 Write-Host "Exporting Azure DevOps data"
