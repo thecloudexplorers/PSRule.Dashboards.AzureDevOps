@@ -62,8 +62,10 @@ stages:
                 $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
                 $credentials = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
 
+                Write-Host "Registering Vault"
                 Register-SecretVault -Name "MySecretVault" -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
 
+                Write-Host "Setting secret"
                 Set-Secret -Name "MyCredential" -Secret $credentials -Vault "MySecretVault"
 
                 $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('MySecretVault', 'MyCredential')
