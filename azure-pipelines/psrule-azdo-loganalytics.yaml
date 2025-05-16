@@ -35,9 +35,6 @@ stages:
             inputs:
               targetType: inline
               pwsh: true
-              env:
-                SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-                EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
               script: |
                 # Ensure TLS 1.2 for secure connection
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
