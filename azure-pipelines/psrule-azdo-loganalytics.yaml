@@ -36,86 +36,46 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                # =======================================================
-                # Instala PSRule.Rules.AzureDevOps via PowerShellGet + NuGet.config
-                # sem chamadas REST diretas ao flatcontainer/index.json
-                # =======================================================
+                # Ensure TLS 1.2 for secure connection
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-                Write-Host "=== Início da instalação PSRule.Rules.AzureDevOps ==="
+                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                $project = "$(project)"
+                $feedName = "$(feedName)"
 
-                # 1) Defina estes valores (ou passe como variáveis de ambiente)
-                $org      = '$(azureDevOpsOrganizationName)'
-                $proj     = '$(project)'
-                $feed     = '$(feedName)'
-                $pat      = $env:AZDO_PAT        # PAT com scope Artifacts: Read
+                # Build feed URL (NuGet v3 for PSResourceGet)
+                $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
 
-                # 2) Monte a URL do feed v3
-                $feedUrl = "https://pkgs.dev.azure.com/$org/$proj/_packaging/$feed/nuget/v3/index.json"
-                Write-Host "Feed URL: $feedUrl"
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-                # 3) Crie o nuget.config para autenticar via NuGet provider
-                $nugetDir = Join-Path $env:USERPROFILE 'AppData\Roaming\NuGet'
-                New-Item -Path $nugetDir -ItemType Directory -Force | Out-Null
+                $patUser = "$(patUser)"
+                $patToken = "$(AZDO-PAT)"
 
-                $nugetConfig = @"
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <add key="$feed" value="$feedUrl" />
-                  </packageSources>
-                  <packageSourceCredentials>
-                    <$feed>
-                      <add key="Username"           value="AzureDevOps" />
-                      <add key="ClearTextPassword"  value="$pat" />
-                    </$feed>
-                  </packageSourceCredentials>
-                </configuration>
-                "@
+                # Convert PAT to secure credential
+                $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
+                $credential = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
 
-                $nugetConfigPath = Join-Path $nugetDir 'nuget.config'
-                Set-Content -Path $nugetConfigPath -Value $nugetConfig -Encoding UTF8
-                Write-Host "-> nuget.config criado em $nugetConfigPath"
-
-                # 4) Registre o repositório no PowerShellGet (PackageManagement)
-                #    — o Credential aqui serve para garantir que o PSGet reconheça o feed
-                $secureToken = ConvertTo-SecureString $pat -AsPlainText -Force
-                $cred        = [PSCredential]::new('AzureDevOps', $secureToken)
-
-                if (-not (Get-PSRepository -Name $feed -ErrorAction SilentlyContinue)) {
-                    Register-PSRepository `
-                      -Name $feed `
-                      -SourceLocation $feedUrl `
-                      -InstallationPolicy Trusted `
-                      -Credential $cred `
-                      -Verbose
-                    Write-Host "-> PSRepository '$feed' registrado."
-                }
-                else {
-                    Write-Host "-> PSRepository '$feed' já está registrado."
+                # Register the repository if not already registered
+                if (-not (Get-PSResourceRepository -Name $feedName -ErrorAction SilentlyContinue)) {
+                    Register-PSResourceRepository -Name $feedName -Uri $feedUrl -Trusted -Credential $credential
                 }
 
-                # 5) Utilize Save-Module para baixar o pacote localmente
-                $modulesDir = Join-Path $PSScriptRoot 'modules'
-                Save-Module `
-                  -Name PSRule.Rules.AzureDevOps `
-                  -Repository $feed `
-                  -Path $modulesDir `
-                  -Credential $cred `
-                  -Force `
-                  -Verbose
+                #TODO: Break into new step
+                # Generate a new token
+                $tenantId = "$(tenantId)"
+                $clientId = "$(clientId)"
+                $clientSecret = "$(clientSecret)"
 
-                Write-Host "-> Módulo salvo em $modulesDir\PSRule.Rules.AzureDevOps"
+                $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
 
-                # 6) Importe o módulo
-                $manifest = Get-ChildItem "$modulesDir\PSRule.Rules.AzureDevOps\*.psd1" | Select-Object -Last 1
-                if (-not $manifest) {
-                    throw "Manifesto (.psd1) não encontrado em '$modulesDir\PSRule.Rules.AzureDevOps'."
+                Write-Host "Creating bearer token"
+                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                    client_id     = $clientId
+                    client_secret = $clientSecret
+                    scope         = "$scopeId/.default"
+                    grant_type    = "client_credentials"
                 }
-
-                Write-Host "Importando módulo: $($manifest.FullName)"
-                Import-Module $manifest.FullName -Verbose
-
-                Write-Host "=== Fim da instalação ==="
+                $newBearerToken = $tokenResponse.access_token
 
               # 15/05
               # - checkout: self
