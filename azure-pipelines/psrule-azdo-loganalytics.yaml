@@ -58,7 +58,8 @@ stages:
 
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-                $patUser = "$(patUser)"
+                # $patUser = "$(patUser)"
+                $patUser = "wesley.camargo@tcsnlps.onmicrosoft.com"
                 $patToken = "$(azdoArtifactPat)"
 
                 # Convert PAT to secure credential
