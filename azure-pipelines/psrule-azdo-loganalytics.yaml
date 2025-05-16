@@ -63,6 +63,8 @@ stages:
 
                 Get-SecretInfo
 
+                Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
+
   # # Ensure TLS 1.2 for secure connection
   # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
