@@ -46,6 +46,10 @@ stages:
                 # Build feed URL (NuGet v3 for PSResourceGet)
                 $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
 
+                Import-Module Microsoft.PowerShell.SecretStore
+                Import-Module Microsoft.PowerShell.SecretManagement
+                Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
+
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
                 $patUser = "$(patUser)"
