@@ -99,14 +99,34 @@ stages:
 
                 Install-PSResource "PSRule.Rules.AzureDevOps" -Credential $credentials
 
-                # Write-Host "Connecting to Azure DevOps"
-                # Connect-AzDevOps -Organization "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
+                Write-Host "Exporting"
+                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                $azureDevOpsOrganizationId = "$(azureDevOpsOrganizationId)"
 
-                # Write-Host "Exporting Azure DevOps data"
-                # Export-AzDevOpsOrganizationRuleData `
-                #   -OutputPath $env:EXPORT_DIRECTORY `
-                #   -Organization $azureDevOpsOrganizationName `
-                #   -OrganizationId $azureDevOpsOrganizationId
+                # Generates a new bearer token for Azure DevOps API
+                $tenantId = '$(tenantId)'
+                $clientId = '$(clientId)'
+                $clientSecret = '$(clientSecret)'
+
+                # Azure DevOps API Scope ID - It never changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
+                $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
+
+                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+                    client_id     = $clientId
+                    client_secret = $clientSecret
+                    scope         = "$scopeId/.default"
+                    grant_type    = "client_credentials"
+                }
+                $bearerToken = $tokenResponse.access_token
+                Write-Host "Bearer Token: [$bearerToken]"
+
+                # Connect to Azure DevOps
+                Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
+
+                Export-AzDevOpsOrganizationRuleData `
+                  -OutputPath $env:EXPORT_DIRECTORY `
+                  -Organization $azureDevOpsOrganizationName `
+                  -OrganizationId $azureDevOpsOrganizationId
 
           - task: PowerShell@2
             displayName: Export Azure DevOps Data
