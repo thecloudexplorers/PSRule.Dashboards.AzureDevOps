@@ -59,7 +59,7 @@ stages:
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
                 $patUser = "$(patUser)"
-                $patToken = "$(AZDO-PAT)"
+                $patToken = "$(azdoArtifactPat)"
 
                 # Convert PAT to secure credential
                 $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
@@ -86,8 +86,6 @@ stages:
                 $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new($secretVaultName, 'MyCredential')
 
                 Get-SecretInfo
-
-
 
                 if (-not(Get-PSResourceRepository -Name "PowershellPSResourceRepository" -ErrorAction SilentlyContinue)){
                   Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
