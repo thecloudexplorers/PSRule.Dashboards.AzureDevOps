@@ -87,6 +87,8 @@ stages:
 
                 Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
 
+                Find-PSResource -Name PSRule.Rules.AzureDevOps -Repository "PowershellPSResourceRepository" -verbose
+
   # # Ensure TLS 1.2 for secure connection
   # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
