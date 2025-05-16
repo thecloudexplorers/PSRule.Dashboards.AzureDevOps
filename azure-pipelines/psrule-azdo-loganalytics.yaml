@@ -73,7 +73,7 @@ stages:
                 Register-SecretVault -Name $secretVaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
                 # Set-SecretStoreConfiguration -Authentication None
 
-                $password = "123"
+                ConvertTo-SecureString "P@ssW0rD!" -AsPlainText -Force
                 Reset-SecretStore -Scope CurrentUser -Authentication Password -Interaction None -Password $password -PasswordTimeout -1 -Force
 
                 Write-Host "Setting secret"
