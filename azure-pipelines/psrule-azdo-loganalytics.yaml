@@ -87,13 +87,13 @@ stages:
 
                 Get-SecretInfo
 
-                $psResourceRepository = "PowershellPSResourceRepository"
 
-                if (-not(Get-PSResourceRepository -Name $psResourceRepository -ErrorAction SilentlyContinue)){
-                  Register-PSResourceRepository -Name $psResourceRepository -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
+
+                if (-not(Get-PSResourceRepository -Name "PowershellPSResourceRepository" -ErrorAction SilentlyContinue)){
+                  Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
                 }
 
-                Find-PSResource -Name "PSRule.Rules.AzureDevOps" -Repository $psResourceRepository -verbose
+                Find-PSResource -Name "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -verbose
 
                 Install-PSResource "PSRule.Rules.AzureDevOps"
 
