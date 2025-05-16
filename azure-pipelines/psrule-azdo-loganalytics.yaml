@@ -62,9 +62,14 @@ stages:
                 $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
                 $credentials = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
 
-                Write-Host "Registering Vault"
-                Register-SecretVault -Name "MySecretVault" -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
-
+                $secretVaultName = "SecretVault"
+                if (-not(Get-SecretVault -Name $secretVaultName -ErrorAction SilentlyContinue)){
+                  Write-Host "Registering Vault [$secretVaultName]."
+                  Register-SecretVault -Name $secretVaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
+                }
+                else{
+                  Write-Host "Vault [$secretVaultName] already exists."
+                }
                 Write-Host "Setting secret"
                 Set-Secret -Name "MyCredential" -Secret $credentials -Vault "MySecretVault"
 
