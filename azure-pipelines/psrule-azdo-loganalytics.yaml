@@ -99,22 +99,31 @@ stages:
 
                 Install-PSResource "PSRule.Rules.AzureDevOps" -Credential $credentials
 
-          - task: PowerShell@2
-            displayName: "Download & Import PSRule.Rules.AzureDevOps via PAT"
-            env:
-              AZDO_PAT: $(AZDO-PAT)
-            inputs:
-              targetType: inline
-              pwsh: true
-              script: |
                 Write-Host "Connecting to Azure DevOps"
-                Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
+                Connect-AzDevOps -Organization "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
 
                 Write-Host "Exporting Azure DevOps data"
                 Export-AzDevOpsOrganizationRuleData `
                   -OutputPath $env:EXPORT_DIRECTORY `
                   -Organization $azureDevOpsOrganizationName `
                   -OrganizationId $azureDevOpsOrganizationId
+
+          # - task: PowerShell@2
+          #   displayName: "Executing PSRule.Rules.AzureDevOps"
+          #   env:
+          #     AZDO_PAT: $(AZDO-PAT)
+          #   inputs:
+          #     targetType: inline
+          #     pwsh: true
+          #     script: |
+          #       Write-Host "Connecting to Azure DevOps"
+          #       Connect-AzDevOps -Organization "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
+
+          #       Write-Host "Exporting Azure DevOps data"
+          #       Export-AzDevOpsOrganizationRuleData `
+          #         -OutputPath $env:EXPORT_DIRECTORY `
+          #         -Organization $azureDevOpsOrganizationName `
+          #         -OrganizationId $azureDevOpsOrganizationId
   # # Ensure TLS 1.2 for secure connection
   # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
