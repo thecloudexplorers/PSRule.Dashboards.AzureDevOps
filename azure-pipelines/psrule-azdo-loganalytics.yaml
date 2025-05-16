@@ -99,6 +99,14 @@ stages:
 
                 Install-PSResource "PSRule.Rules.AzureDevOps" -Credential $credentials
 
+                Connect-AzDevOps -Organization" "$azureDevOpsOrganizationName" -OrganizationId "$azureDevOpsOrganizationId" -AccessToken "$bearerToken"
+
+                Write-Host "Exporting Azure DevOps data"
+                Export-AzDevOpsOrganizationRuleData `
+                  -OutputPath $env:EXPORT_DIRECTORY `
+                  -Organization $azureDevOpsOrganizationName `
+                  -OrganizationId $azureDevOpsOrganizationId
+
   # # Ensure TLS 1.2 for secure connection
   # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
