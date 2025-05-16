@@ -135,41 +135,25 @@ stages:
                 #   -Organization $azureDevOpsOrganizationName `
                 #   -OrganizationId $azureDevOpsOrganizationId
 
+          - task: PublishPipelineArtifact@1
+            displayName: Publishing Azure DevOps Exports & Reports
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/export
+              artifactName: AzureDevOpsData
+
           - task: PowerShell@2
-            displayName: Export Azure DevOps Data
+            displayName: Analyse Azure DevOps Data
             inputs:
               targetType: "inline"
               errorActionPreference: continue
               script: |
-                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
-                $azureDevOpsOrganizationId = "$(azureDevOpsOrganizationId)"
-
-                # Generates a new bearer token for Azure DevOps API
-                $tenantId = '$(tenantId)'
-                $clientId = '$(clientId)'
-                $clientSecret = '$(clientSecret)'
-
-                # Azure DevOps API Scope ID - It never changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
-                $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
-
-                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
-                    client_id     = $clientId
-                    client_secret = $clientSecret
-                    scope         = "$scopeId/.default"
-                    grant_type    = "client_credentials"
-                }
-                $bearerToken = $tokenResponse.access_token
-                Write-Host "Bearer Token: [$bearerToken]"
-
-                # Connect to Azure DevOps
-                Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
-
-                Export-AzDevOpsOrganizationRuleData `
-                  -OutputPath $env:EXPORT_DIRECTORY `
-                  -Organization $azureDevOpsOrganizationName `
-                  -OrganizationId $azureDevOpsOrganizationId
+                $result = Invoke-PSRule `
+                  -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
+                  -InputPath $env:EXPORT_DIRECTORY `
+                  -Format Detect `
+                  -Culture en
+                $result -Verbose | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
 
   # # Ensure TLS 1.2 for secure connection
