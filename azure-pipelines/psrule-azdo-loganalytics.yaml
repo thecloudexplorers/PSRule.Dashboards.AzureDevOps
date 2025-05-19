@@ -102,7 +102,7 @@ stages:
 
 
 
-                Install-PSResource PSRule.Rules.AzureDevOps -Repository PSGallery
+                Install-Module PSRule.Rules.AzureDevOps -Repository PSGallery -Force
 
                 # Uncomment, this installs module from private artifacts
                 # Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
