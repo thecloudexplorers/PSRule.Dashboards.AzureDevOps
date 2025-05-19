@@ -131,19 +131,22 @@ stages:
 
                 Export-AzDevOpsOrganizationRuleData -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -OutputPath "$(Build.ArtifactStagingDirectory)/export"
 
-                Install-Module -Name 'PSRule' -Repository PSGallery -Force      
+                Get-module -ListAvailable -Name  PSRule.Rules.AzureDevOps -Refresh
 
                 try{
-                Write-Host "Analysing Azure DevOps data..."
+                  Write-Host "Analysing Azure DevOps data..."
 
-                $result = Invoke-PSRule `
-                  -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-                  -InputPath "$(Build.ArtifactStagingDirectory)/export" `
-                  -Format Detect `
-                  -Culture en
-                $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+                  Assert-PSRule `
+                    -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
+                    -InputPath "$(Build.ArtifactStagingDirectory)/export" `
+                    -Format Detect `
+                    -Culture en
+                  
+                  Write-Host "Exporting analysis to Log Analytics..."
+
+                  $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
                 } catch {
-                  Write-Error "!!! Error when Analysing Azure DevOps data or exporting to log analytics: $($_.Exception.Message)"
+                  Write-Error "!!! Error when Analysing Azure DevOps data: $($_.Exception.Message)"
                   throw
                 }
 
