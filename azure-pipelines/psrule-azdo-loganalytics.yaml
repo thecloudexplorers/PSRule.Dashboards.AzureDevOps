@@ -100,9 +100,12 @@ stages:
                 Write-Host "Register PSResource repository"
                 Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
 
-                # Find-PSResource -Name "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
 
-                Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
+
+                Install-PSResource PSRule.Rules.AzureDevOps -Repository PSGallery
+
+                # Uncomment, this installs module from private artifacts
+                # Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
                 Import-Module "PSRule.Rules.AzureDevOps"
 
                 Write-Host "Exporting"
