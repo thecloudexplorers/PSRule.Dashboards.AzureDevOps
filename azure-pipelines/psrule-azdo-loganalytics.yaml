@@ -168,7 +168,7 @@ stages:
                       -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
                       -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
                       -Format Detect `
-                      -Culture en
+                      -Culture en -Debug -Verbose
 
                   $result
 
