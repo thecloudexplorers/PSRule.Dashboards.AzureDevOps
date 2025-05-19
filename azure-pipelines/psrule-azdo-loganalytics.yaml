@@ -133,7 +133,7 @@ stages:
 
                 $result = Invoke-PSRule `
                   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-                  -InputPath $env:EXPORT_DIRECTORY `
+                  -InputPath "$(Build.ArtifactStagingDirectory)/export" `
                   -Format Detect `
                   -Culture en
                 $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
