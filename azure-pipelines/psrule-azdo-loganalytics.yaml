@@ -140,7 +140,7 @@ stages:
                     -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
                     -InputPath "$(Build.ArtifactStagingDirectory)/export" `
                     -Format Detect `
-                    -Culture en
+                    -Culture en -Debug
                   
                   Write-Host "Exporting analysis to Log Analytics..."
 
