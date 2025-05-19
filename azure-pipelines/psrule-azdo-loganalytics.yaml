@@ -133,12 +133,20 @@ stages:
 
                 Install-Module -Name 'PSRule' -Repository PSGallery -Force      
 
+                try{
+                Write-Host "Analysing Azure DevOps data..."
+
                 $result = Invoke-PSRule `
                   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
                   -InputPath "$(Build.ArtifactStagingDirectory)/export" `
                   -Format Detect `
                   -Culture en
                 $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+                } catch {
+                  Write-Error "!!! Error when Analysing Azure DevOps data or exporting to log analytics: $($_.Exception.Message)"
+                  throw
+                }
+
 
                 # Export-AzDevOpsOrganizationRuleData `
                 #   -OutputPath "$(Build.ArtifactStagingDirectory)/export" `
