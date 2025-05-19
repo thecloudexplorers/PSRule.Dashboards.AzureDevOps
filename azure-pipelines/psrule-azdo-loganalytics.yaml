@@ -139,6 +139,8 @@ stages:
                 try{
                   Write-Host "Analysing Azure DevOps data..."
 
+                  Get-ChildItem "$(Build.ArtifactStagingDirectory)/export" -Recurse
+
                   Assert-PSRule `
                     -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
                     -InputPath "$(Build.ArtifactStagingDirectory)/export" `
