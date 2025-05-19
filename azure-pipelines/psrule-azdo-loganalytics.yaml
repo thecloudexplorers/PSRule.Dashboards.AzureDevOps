@@ -52,8 +52,15 @@ stages:
                 Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
-                Install-Module -Name PSRule -Repository PSGallery -Force          
+                     
                 Install-Module -Name PSRule.Monitor -Repository PSGallery -Force      
+
+
+                Install-Module PSRule -Scope CurrentUser -Repository PSGallery
+                Import-Module PSRule -Force
+
+
+
 
                 Import-Module Microsoft.PowerShell.SecretStore
                 Import-Module Microsoft.PowerShell.SecretManagement
@@ -102,11 +109,15 @@ stages:
 
 
 
-                Install-Module PSRule.Rules.AzureDevOps -Repository PSGallery -Force
+                Install-Module PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
 
                 # Uncomment, this installs module from private artifacts
                 # Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
-                Import-Module "PSRule.Rules.AzureDevOps"
+                Import-Module PSRule.Rules.AzureDevOps
+
+                # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
+                # Import-Module PSRule.Rules.AzureDevOps
+
 
                 Write-Host "Exporting"
                 $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
