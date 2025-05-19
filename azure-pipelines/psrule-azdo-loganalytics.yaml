@@ -155,8 +155,7 @@ stages:
 
                 try{
                   Write-Host "Analysing Azure DevOps data..."
-
-                  Get-ChildItem "$(Build.ArtifactStagingDirectory)/export" -Recurse
+                  
 
                   # Assert-PSRule `
                   #   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
@@ -167,7 +166,7 @@ stages:
 
                   $result = Invoke-PSRule `
                       -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
-                      -InputPath $env:EXPORT_DIRECTORY\*.json `
+                      -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
                       -Format Detect `
                       -Culture en
 
