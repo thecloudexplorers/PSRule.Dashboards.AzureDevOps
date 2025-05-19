@@ -51,11 +51,13 @@ stages:
                 Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force
-                Install-Module -Name 'PSRule' -Repository PSGallery -Force                
+                Install-Module -Name 'PSRule' -Repository PSGallery -Force          
+                Install-Module -Name PSRule.Monitor -Scope CurrentUser -Force      
 
                 Import-Module Microsoft.PowerShell.SecretStore
                 Import-Module Microsoft.PowerShell.SecretManagement
                 Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
+                Import-Module PSRule.Monitor
 
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
