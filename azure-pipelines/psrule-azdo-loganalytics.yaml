@@ -51,9 +51,9 @@ stages:
                 Write-Host "Importing Modules"
                 Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
-                Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force
-                Install-Module -Name 'PSRule' -Repository PSGallery -Force          
-                Install-Module -Name PSRule.Monitor -Repository PSGallery -Scope CurrentUser -Force      
+                Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+                Install-Module -Name PSRule -Repository PSGallery -Force          
+                Install-Module -Name PSRule.Monitor -Repository PSGallery -Force      
 
                 Import-Module Microsoft.PowerShell.SecretStore
                 Import-Module Microsoft.PowerShell.SecretManagement
