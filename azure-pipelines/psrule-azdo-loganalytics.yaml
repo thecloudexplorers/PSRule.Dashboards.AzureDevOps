@@ -60,7 +60,7 @@ stages:
                 Import-Module PSRule -Force
 
 
-
+                Get-Module PSRule
 
                 Import-Module Microsoft.PowerShell.SecretStore
                 Import-Module Microsoft.PowerShell.SecretManagement
