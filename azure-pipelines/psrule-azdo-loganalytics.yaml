@@ -48,6 +48,8 @@ stages:
 
                 $feedUrl = "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json"
 
+                Uninstall-Module PSRule -AllVersions
+
                 Write-Host "Importing Modules"
                 Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
@@ -57,8 +59,8 @@ stages:
 
 
                 Install-Module PSRule -Scope CurrentUser -Repository PSGallery
-                Import-Module PSRule -Force
 
+                Import-Module PSRule -RequiredVersion 2.9.0 -Force
 
                 Get-Module PSRule
 
