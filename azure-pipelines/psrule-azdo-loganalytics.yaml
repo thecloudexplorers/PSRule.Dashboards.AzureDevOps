@@ -159,7 +159,7 @@ stages:
 
                   Assert-PSRule `
                     -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-                    -InputPath "$(Build.ArtifactStagingDirectory)/export" `
+                    -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
                     -Format Detect `
                     -Culture en -Debug -Verbose
                   
