@@ -146,6 +146,8 @@ stages:
               targetType: "inline"
               errorActionPreference: continue
               script: |
+                Install-Module -Name 'PSRule' -Repository PSGallery -Force      
+
                 $result = Invoke-PSRule `
                   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
                   -InputPath $env:EXPORT_DIRECTORY `
