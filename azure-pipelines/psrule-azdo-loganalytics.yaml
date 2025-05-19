@@ -110,6 +110,7 @@ stages:
                 $azureDevOpsOrganizationId = "$(azureDevOpsOrganizationId)"
 
                 # Generates a new bearer token for Azure DevOps API
+                Write-Host "Generates a new bearer token for Azure DevOps API"
                 $tenantId = '$(tenantId)'
                 $clientId = '$(clientId)'
                 $clientSecret = '$(clientSecret)'
