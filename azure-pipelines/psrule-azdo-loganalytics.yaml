@@ -61,7 +61,7 @@ stages:
                 Import-Module PSRule.Monitor
 
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
+                Write-Host "Modules Imported"
                 # $patUser = "$(patUser)"
                 $patUser = "wesley.camargo@tcsnlps.onmicrosoft.com"
                 $patToken = "$(azdoArtifactPat)"
