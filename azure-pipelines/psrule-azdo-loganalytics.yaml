@@ -150,7 +150,6 @@ stages:
                   throw
                 }
 
-
                 # Export-AzDevOpsOrganizationRuleData `
                 #   -OutputPath "$(Build.ArtifactStagingDirectory)/export" `
                 #   -Organization $azureDevOpsOrganizationName `
