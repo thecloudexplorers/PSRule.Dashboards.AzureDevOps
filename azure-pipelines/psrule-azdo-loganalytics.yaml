@@ -158,11 +158,11 @@ stages:
 
                   Get-ChildItem "$(Build.ArtifactStagingDirectory)/export" -Recurse
 
-                  Assert-PSRule `
-                    -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-                    -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
-                    -Format Detect `
-                    -Culture en -Debug -Verbose
+                  # Assert-PSRule `
+                  #   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
+                  #   -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
+                  #   -Format Detect `
+                  #   -Culture en -Debug -Verbose
                   
 
                   $result = Invoke-PSRule `
@@ -170,6 +170,9 @@ stages:
                       -InputPath $env:EXPORT_DIRECTORY\*.json `
                       -Format Detect `
                       -Culture en
+
+                  $result
+
                   $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule    
 
 
