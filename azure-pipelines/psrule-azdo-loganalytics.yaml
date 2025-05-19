@@ -109,10 +109,10 @@ stages:
 
 
 
-                Install-Module PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
+                # Install-Module PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
 
                 # Uncomment, this installs module from private artifacts
-                # Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
+                Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
                 Import-Module PSRule.Rules.AzureDevOps
 
                 # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
@@ -161,6 +161,15 @@ stages:
                     -Format Detect `
                     -Culture en -Debug -Verbose
                   
+
+                  $result = Invoke-PSRule `
+                      -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
+                      -InputPath $env:EXPORT_DIRECTORY\*.json `
+                      -Format Detect `
+                      -Culture en
+                  $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule    
+
+
                   Write-Host "Exporting analysis to Log Analytics..."
 
                   $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
