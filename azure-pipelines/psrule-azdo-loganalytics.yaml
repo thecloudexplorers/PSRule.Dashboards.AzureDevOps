@@ -129,6 +129,15 @@ stages:
 
                 Export-AzDevOpsOrganizationRuleData -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -OutputPath "$(Build.ArtifactStagingDirectory)/export"
 
+                Install-Module -Name 'PSRule' -Repository PSGallery -Force      
+
+                $result = Invoke-PSRule `
+                  -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
+                  -InputPath $env:EXPORT_DIRECTORY `
+                  -Format Detect `
+                  -Culture en
+                $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+
                 # Export-AzDevOpsOrganizationRuleData `
                 #   -OutputPath "$(Build.ArtifactStagingDirectory)/export" `
                 #   -Organization $azureDevOpsOrganizationName `
@@ -140,22 +149,22 @@ stages:
               targetPath: $(Build.ArtifactStagingDirectory)/export
               artifactName: AzureDevOpsData
 
-          - task: PowerShell@2
-            displayName: Analyse Azure DevOps Data
-            inputs:
-              targetType: "inline"
-              errorActionPreference: continue
-              script: |
-                Install-Module -Name 'PSRule' -Repository PSGallery -Force      
+          # - task: PowerShell@2
+          #   displayName: Analyse Azure DevOps Data
+          #   inputs:
+          #     targetType: "inline"
+          #     errorActionPreference: stop
+          #     script: |
+          #       Install-Module -Name 'PSRule' -Repository PSGallery -Force
 
-                $result = Invoke-PSRule `
-                  -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-                  -InputPath $env:EXPORT_DIRECTORY `
-                  -Format Detect `
-                  -Culture en
-                $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
-            env:
-              EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
+          #       $result = Invoke-PSRule `
+          #         -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
+          #         -InputPath $env:EXPORT_DIRECTORY `
+          #         -Format Detect `
+          #         -Culture en
+          #       $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+          #   env:
+          #     EXPORT_DIRECTORY: $(Build.ArtifactStagingDirectory)/export
 
   # # Ensure TLS 1.2 for secure connection
   # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
