@@ -149,8 +149,8 @@ stages:
                 Import-Module PSRule.Rules.AzureDevOps
 
 
-                Get-InstalledModule PSRule.Rules.AzureDevOps
-                Get-PSResource PSRule.Rules.AzureDevOps
+                Get-InstalledModule PSRule.Rules.AzureDevOps -ErrorAction SilentlyContinue
+                Get-PSResource PSRule.Rules.AzureDevOps -ErrorAction SilentlyContinue
 
 
 
