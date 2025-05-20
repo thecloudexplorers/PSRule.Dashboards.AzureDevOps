@@ -149,8 +149,8 @@ stages:
                 Import-Module PSRule.Rules.AzureDevOps
 
 
-                Get-InstalledModule
-                Get-PSResource 
+                Get-InstalledModule PSRule.Rules.AzureDevOps
+                Get-PSResource PSRule.Rules.AzureDevOps
 
 
 
