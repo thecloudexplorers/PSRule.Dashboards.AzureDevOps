@@ -36,22 +36,13 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                # Ensure TLS 1.2 for secure connection
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
-                $project = "$(project)"
-                $feedName = "$(feedName)"
+                ###########################################################################
+                Write-Host "##[group]Setting PSGallery Powershell Modules"
 
-                # Build feed URL (NuGet v3 for PSResourceGet)
-                # $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
+                # Uninstall-Module PSRule -AllVersions           
 
-                $feedUrl = "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json"
-
-
-                # Uninstall-Module PSRule -AllVersions
-
-                Write-Host "Importing Modules"
                 Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
@@ -61,24 +52,48 @@ stages:
 
                 Install-Module PSRule -Scope CurrentUser -Repository PSGallery
 
-                Import-Module PSRule -RequiredVersion 2.9.0 -Force
-
-                Get-Module PSRule
+                Import-Module PSRule -RequiredVersion 2.9.0 -Force                
 
                 Import-Module Microsoft.PowerShell.SecretStore
                 Import-Module Microsoft.PowerShell.SecretManagement
                 Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
                 Import-Module PSRule.Monitor
 
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
                 Write-Host "Modules Imported"
+
+                Get-Module PSRule
+
+                Write-Host "##[endgroup]"
+
+
+                Write-Host "##[group]Prepare variables"
+                ###########################################################################
+
+                # Ensure TLS 1.2 for secure connection
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                $project = "$(project)"
+                $feedName = "$(feedName)"
+
                 # $patUser = "$(patUser)"
                 $patUser = "wesley.camargo@tcsnlps.onmicrosoft.com"
                 $patToken = "$(azdoArtifactPat)"
 
+
+                # Build feed URL (NuGet v3 for PSResourceGet)
+                # $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
+
+                $feedUrl = "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json"
+
                 # Convert PAT to secure credential
                 $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
                 $credentials = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
+
+                Write-Host "##[endgroup]"
+
+                ###########################################################################
+                Write-Host "##[group]Set secret vault and secret store"
 
                 $secretVaultName = "SecretVault"
                 if ((Get-SecretVault -Name $secretVaultName -ErrorAction SilentlyContinue)){
@@ -102,6 +117,11 @@ stages:
 
                 Get-SecretInfo
 
+                Write-Host "##[endgroup]"
+
+                ###########################################################################
+                Write-Host "##[group]Set Azure Artifacts as PowerShell Repository"
+
                 if ((Get-PSResourceRepository -Name "PowershellPSResourceRepository" -ErrorAction SilentlyContinue)){
                   Write-Host "Removing existing repo PowershellPSResourceRepository"
                   Unregister-PSResourceRepository -Name "PowershellPSResourceRepository"
@@ -110,7 +130,10 @@ stages:
                 Write-Host "Register PSResource repository"
                 Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
 
+                Write-Host "##[endgroup]""
 
+                ###########################################################################
+                Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
 
                 # Install-Module PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
 
@@ -121,6 +144,10 @@ stages:
                 # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
                 # Import-Module PSRule.Rules.AzureDevOps
 
+                Write-Host "##[endgroup]"
+
+                ###########################################################################
+                Write-Host "##[group]Exporting Azure DevOps Data"
 
                 Write-Host "Exporting"
                 $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
@@ -150,6 +177,11 @@ stages:
                 Write-Host "Exporting Azure DevOps Data"
 
                 Export-AzDevOpsOrganizationRuleData -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -OutputPath "$(Build.ArtifactStagingDirectory)/export"
+
+                Write-Host "##[endgroup]"
+
+                ###########################################################################
+                Write-Host "##[group]Analysing Azure DevOps Data"
 
                 Get-module -ListAvailable -Name  PSRule.Rules.AzureDevOps -Refresh
 
@@ -182,6 +214,8 @@ stages:
                   Write-Error "!!! Error when Analysing Azure DevOps data: $($_.Exception.Message)"
                   throw
                 }
+
+                Write-Host "##[endgroup]"
 
                 # Export-AzDevOpsOrganizationRuleData `
                 #   -OutputPath "$(Build.ArtifactStagingDirectory)/export" `
