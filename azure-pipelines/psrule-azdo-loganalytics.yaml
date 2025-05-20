@@ -40,7 +40,7 @@ stages:
 
                 # Remove-Module  "PSRule.Rules.AzureDevOps" -Force
 
-                Uninstall-Module PSRule.Rules.AzureDevOps -AllVersions -Force
+                # Uninstall-Module PSRule.Rules.AzureDevOps -AllVersions -Force
 
                 ###########################################################################
                 Write-Host "##[group]Setting PSGallery Powershell Modules"
