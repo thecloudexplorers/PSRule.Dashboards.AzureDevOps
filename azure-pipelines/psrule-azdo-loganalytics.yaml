@@ -36,7 +36,8 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+                # Ensure TLS 1.2 for secure connection
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
                 # Remove-Module  "PSRule.Rules.AzureDevOps" -Force
 
@@ -72,8 +73,7 @@ stages:
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
 
-                # Ensure TLS 1.2 for secure connection
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 
                 $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
                 $project = "$(project)"
@@ -193,38 +193,55 @@ stages:
                 ###########################################################################
                 Write-Host "##[group]Analysing Azure DevOps Data"
 
+                $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
 
+                $outputFiles = Get-ChildItem -Path $reportOutputPath -File -Recurse
 
-
-                try{
-                  Write-Host "Analysing Azure DevOps data..."
-                  
-
-                  # Assert-PSRule `
-                  #   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
-                  #   -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
-                  #   -Format Detect `
-                  #   -Culture en -Debug -Verbose
-                  
-
-                  $result = Invoke-PSRule `
-                      -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
-                      -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
-                      -Format Detect `
-                      -Culture en -Debug -Verbose
-
-                  $result
-
-                  $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule    
-
-
-                  Write-Host "Exporting analysis to Log Analytics..."
-
-                  $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
-                } catch {
-                  Write-Error "!!! Error when Analysing Azure DevOps data: $($_.Exception.Message)"
-                  throw
+                $result = $null
+                foreach ($outputFile in $outputFiles) {
+                    # Assert-PSRule -Module PSRule.Rules.AzureDevOps -InputPath $outputFile
+                        
+                    $result += Invoke-PSRule `
+                        -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
+                        -InputPath $outputFile `
+                        -Format Detect `
+                        -Culture en
                 }
+                  
+                Write-Host "Sending results to Log Analytics"
+                $result | Send-PSRuleMonitorRecord -WorkspaceId $logAnalyticsWorkspaceId -SharedKey $logAnalyticsSharedKey -LogName PSRule    
+
+
+
+                # try{
+                #   Write-Host "Analysing Azure DevOps data..."
+                  
+
+                #   # Assert-PSRule `
+                #   #   -Module PSRule.Rules.AzureDevOps,PSRule.Monitor `
+                #   #   -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
+                #   #   -Format Detect `
+                #   #   -Culture en -Debug -Verbose
+                  
+
+                #   $result = Invoke-PSRule `
+                #       -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
+                #       -InputPath "$(Build.ArtifactStagingDirectory)\export\*.json" `
+                #       -Format Detect `
+                #       -Culture en -Debug -Verbose
+
+                #   $result
+
+                #   $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule    
+
+
+                #   Write-Host "Exporting analysis to Log Analytics..."
+
+                #   $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule
+                # } catch {
+                #   Write-Error "!!! Error when Analysing Azure DevOps data: $($_.Exception.Message)"
+                #   throw
+                # }
 
                 Write-Host "##[endgroup]"
 
