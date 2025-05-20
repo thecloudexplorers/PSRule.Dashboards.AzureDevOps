@@ -187,7 +187,7 @@ stages:
                 Write-Host "Exporting Azure DevOps Data"
 
                 # Export-AzDevOpsOrganizationRuleData -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -OutputPath "$(Build.ArtifactStagingDirectory)/export"
-                Export-AzDevOpsOrganizationRuleData -Organization "tcsnlpscan" -OutputPath "$(Build.ArtifactStagingDirectory)/export"
+                Export-AzDevOpsOrganizationRuleData -OutputPath "$(Build.ArtifactStagingDirectory)/export"
 
                 Write-Host "##[endgroup]"
 
