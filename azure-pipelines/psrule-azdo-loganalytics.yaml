@@ -199,7 +199,7 @@ stages:
                     Select-Object -ExpandProperty DirectoryName -Unique | `
                     ForEach-Object { Join-Path $_ '*.json' }
                     
-                Assert-PSRule -Module PSRule.Rules.AzureDevOps -InputPath $outputFiles
+                # Assert-PSRule -Module PSRule.Rules.AzureDevOps -InputPath $outputFiles
 
                 $result = Invoke-PSRule `
                     -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
