@@ -38,6 +38,11 @@ stages:
               script: |
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
 
+                Remove-Module  "PSRule.Rules.AzureDevOps" -Force
+
+                Uninstall-PSResource "PSRule.Rules.AzureDevOps"
+                Uninstall-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
+
                 ###########################################################################
                 Write-Host "##[group]Setting PSGallery Powershell Modules"
 
@@ -136,7 +141,7 @@ stages:
                 Write-Host "##[endgroup]"
 
                 ###########################################################################
-                Uninstall-PSResource "PSRule.Rules.AzureDevOps"
+
 
                 # Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
 
