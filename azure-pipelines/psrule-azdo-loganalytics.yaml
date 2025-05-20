@@ -40,7 +40,6 @@ stages:
 
                 # Remove-Module  "PSRule.Rules.AzureDevOps" -Force
 
-                Uninstall-Module PSRule.Rules.AzureDevOps -AllVersions -Scope CurrentUser -Force
                 Uninstall-Module PSRule.Rules.AzureDevOps -AllVersions -Force
 
                 ###########################################################################
