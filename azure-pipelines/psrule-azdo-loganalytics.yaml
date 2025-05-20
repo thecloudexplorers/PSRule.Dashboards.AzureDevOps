@@ -65,7 +65,7 @@ stages:
 
                 Write-Host "PSGallery modules imported"
 
-                Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
+                Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery -Force
                 Import-Module PSRule.Rules.AzureDevOps
 
                 Get-Module
