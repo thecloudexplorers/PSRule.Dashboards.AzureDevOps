@@ -36,7 +36,7 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
 
                 ###########################################################################
                 Write-Host "##[group]Setting PSGallery Powershell Modules"
