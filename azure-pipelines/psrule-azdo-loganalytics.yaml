@@ -52,16 +52,19 @@ stages:
 
                 Install-Module PSRule -Scope CurrentUser -Repository PSGallery
 
-                Import-Module PSRule -RequiredVersion 2.9.0 -Force                
+                Import-Module PSRule -Force                
 
                 Import-Module Microsoft.PowerShell.SecretStore
                 Import-Module Microsoft.PowerShell.SecretManagement
                 Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
                 Import-Module PSRule.Monitor
 
-                Write-Host "Modules Imported"
+                Write-Host "PSGallery modules imported"
 
-                Get-Module PSRule
+                Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
+                Import-Module PSRule.Rules.AzureDevOps
+
+                Get-Module
 
                 Write-Host "##[endgroup]"
 
@@ -130,21 +133,21 @@ stages:
                 Write-Host "Register PSResource repository"
                 Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
 
-                Write-Host "##[endgroup]""
+                Write-Host "##[endgroup]"
 
                 ###########################################################################
-                Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
+                # Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
 
-                # Install-Module PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
+                # # Install-Module PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
 
-                # Uncomment, this installs module from private artifacts
-                Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
-                Import-Module PSRule.Rules.AzureDevOps
-
-                # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
+                # # Uncomment, this installs module from private artifacts
+                # Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
                 # Import-Module PSRule.Rules.AzureDevOps
 
-                Write-Host "##[endgroup]"
+                # # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
+                # # Import-Module PSRule.Rules.AzureDevOps
+
+                # Write-Host "##[endgroup]"
 
                 ###########################################################################
                 Write-Host "##[group]Exporting Azure DevOps Data"
