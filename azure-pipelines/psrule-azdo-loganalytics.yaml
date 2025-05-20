@@ -195,23 +195,17 @@ stages:
 
                 $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
 
-                $outputFiles = Get-ChildItem -Path $reportOutputPath -File -Recurse
+                $outputFiles = Get-ChildItem -Path $reportOutputPath -File -Recurse | `
+                    Select-Object -ExpandProperty DirectoryName -Unique | `
+                    ForEach-Object { Join-Path $_ '*.json' }
+                    
+                Assert-PSRule -Module PSRule.Rules.AzureDevOps -InputPath $outputFiles
 
-                $result = $null
-                foreach ($outputFile in $outputFiles) {
-                    # Assert-PSRule -Module PSRule.Rules.AzureDevOps -InputPath $outputFile
-                        
-                    $result += Invoke-PSRule `
-                        -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
-                        -InputPath $outputFile `
-                        -Format Detect `
-                        -Culture en
-                }
-                  
-                Write-Host "Sending results to Log Analytics"
-                $result | Send-PSRuleMonitorRecord -WorkspaceId $logAnalyticsWorkspaceId -SharedKey $logAnalyticsSharedKey -LogName PSRule    
-
-
+                $result = Invoke-PSRule `
+                    -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
+                    -InputPath $outputFiles `
+                    -Format Detect `
+                    -Culture en
 
                 # try{
                 #   Write-Host "Analysing Azure DevOps data..."
