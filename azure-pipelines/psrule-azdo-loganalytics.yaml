@@ -136,6 +136,8 @@ stages:
                 Write-Host "##[endgroup]"
 
                 ###########################################################################
+                Uninstall-PSResource "PSRule.Rules.AzureDevOps"
+
                 # Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
 
                 # # Install-Module PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
