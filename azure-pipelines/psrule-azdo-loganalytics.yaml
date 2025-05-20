@@ -207,6 +207,9 @@ stages:
                     -Format Detect `
                     -Culture en
 
+                Write-Host "Exporting analysis to Log Analytics..."
+                $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule    
+
                 # try{
                 #   Write-Host "Analysing Azure DevOps data..."
                   
