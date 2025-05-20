@@ -44,13 +44,6 @@ stages:
                 Write-Host "Removing module [PSRule.Rules.AzureDevOps]"
                 # Uninstall-Module -Name PSRule.Rules.AzureDevOps
 
-                Get-InstalledModule | Select Name, Version, Repository
-                Get-PSResource | Select Name, Version, Source
-
-
-
-
-
                 ###########################################################################
                 Write-Host "##[group]Setting PSGallery Powershell Modules"
 
@@ -74,10 +67,7 @@ stages:
 
                 Write-Host "PSGallery modules imported"
 
-                Get-Module
-
                 Write-Host "##[endgroup]"
-
 
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
@@ -157,6 +147,12 @@ stages:
                 # Uncomment, this installs module from private artifacts
                 Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
                 Import-Module PSRule.Rules.AzureDevOps
+
+
+                Get-InstalledModule
+                Get-PSResource 
+
+
 
                 Write-Host "##[endgroup]"
 
