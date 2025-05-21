@@ -79,7 +79,7 @@ stages:
                 # Ensure TLS 1.2 for secure connection
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-                Import-Module Microsoft.PowerShell.PSResourceGet -Force
+                # # Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
