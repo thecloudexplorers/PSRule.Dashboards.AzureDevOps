@@ -59,7 +59,9 @@ stages:
                 Write-Host "##[endgroup]"
 
           - task: PowerShell@2
-            displayName: "Import PSGallery Powershell Modules"
+            displayName: "Download & Import PSRule.Rules.AzureDevOps via PAT"
+            env:
+              AZDO_PAT: $(AZDO-PAT)
             inputs:
               targetType: inline
               pwsh: true
@@ -76,14 +78,6 @@ stages:
 
                 Write-Host "##[endgroup]"
 
-          - task: PowerShell@2
-            displayName: "Download & Import PSRule.Rules.AzureDevOps via PAT"
-            env:
-              AZDO_PAT: $(AZDO-PAT)
-            inputs:
-              targetType: inline
-              pwsh: true
-              script: |
                 # Ensure TLS 1.2 for secure connection
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
