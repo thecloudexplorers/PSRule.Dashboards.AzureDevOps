@@ -104,11 +104,11 @@ stages:
                 # Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
                 # Import-Module PSRule.Monitor
 
-                Write-Host "##[group] Import PowerShell Modules"
+                # Write-Host "##[group] Import PowerShell Modules"
 
-                Import-Module PSRule -Force
-                Import-Module Microsoft.PowerShell.PSResourceGet -Force
-                Import-Module PSRule.Monitor -Force
+                # Import-Module PSRule -Force
+                # Import-Module Microsoft.PowerShell.PSResourceGet -Force
+                # Import-Module PSRule.Monitor -Force
 
                 Write-Host "##[endgroup]"
 
