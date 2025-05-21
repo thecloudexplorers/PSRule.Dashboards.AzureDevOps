@@ -29,6 +29,36 @@ stages:
             persistCredentials: true
 
           - task: PowerShell@2
+            displayName: "Install PSGallery Powershell Modules"
+            inputs:
+              targetType: inline
+              pwsh: true
+              script: |
+                Write-Host "##[group]Installing PSGallery Powershell Modules"
+
+                $installedModule = Get-InstalledModule -Name PSRule.Rules.AzureDevOps -ErrorAction SilentlyContinue
+
+                if ($installedModule) {
+                    Uninstall-Module -Name PSRule.Rules.AzureDevOps -AllVersions
+                }
+
+                $installedPSResource = Get-InstalledPSResource -Name PSRule.Rules.AzureDevOps -ErrorAction SilentlyContinue
+
+                if ($installedPSResource) {
+                    Uninstall-PSResource -Name PSRule.Rules.AzureDevOps 
+                }
+
+                Install-Module PSRule -Scope CurrentUser -Repository PSGallery -Force -RequiredVersion 2.9.0
+                Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+                Install-Module -Name PSRule.Monitor -Repository PSGallery -Force
+                Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
+                Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
+
+                Write-Host "PSGallery modules installed"
+
+                Write-Host "##[endgroup]"
+
+          - task: PowerShell@2
             displayName: "Import PSGallery Powershell Modules"
             inputs:
               targetType: inline
@@ -42,7 +72,7 @@ stages:
                 Import-Module Microsoft.PowerShell.SecretManagement  -Force
                 Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
-                Write-Host "PSGallery modules imported"
+                Write-Host "PSGallery modules imported."
 
                 Write-Host "##[endgroup]"
 
