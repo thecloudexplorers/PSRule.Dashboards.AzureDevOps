@@ -74,6 +74,7 @@ stages:
                 Import-Module Microsoft.PowerShell.SecretManagement  -Force
                 Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
+
                 Write-Host "PSGallery modules imported."
 
                 Write-Host "##[endgroup]"
@@ -95,6 +96,9 @@ stages:
                 $tenantId = "$(tenantId)"
                 $clientId = "$(clientId)"
                 $clientSecret = "$(clientSecret)"
+
+                $targetAdoOrganizationName =  $(azureDevOpsOrganizationName)
+                $targetAdoOrganizationID = $(azureDevOpsOrganizationId)
 
                 # Build feed URL (NuGet v3 for PSResourceGet)
                 $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
