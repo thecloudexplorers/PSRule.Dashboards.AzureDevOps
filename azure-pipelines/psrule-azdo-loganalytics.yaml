@@ -59,10 +59,10 @@ stages:
                 Write-Host "##[group] Importing PowerShell Modules"
 
                 Import-Module PSRule -Force
-                # Import-Module Microsoft.PowerShell.PSResourceGet -Force
                 Import-Module PSRule.Monitor -Force
                 Import-Module Microsoft.PowerShell.SecretStore -Force
                 Import-Module Microsoft.PowerShell.SecretManagement  -Force
+                Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
                 Write-Host "PSGallery modules installed"
 
@@ -78,8 +78,6 @@ stages:
               script: |
                 # Ensure TLS 1.2 for secure connection
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-                Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
