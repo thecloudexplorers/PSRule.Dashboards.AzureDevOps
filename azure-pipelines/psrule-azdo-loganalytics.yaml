@@ -29,9 +29,7 @@ stages:
             persistCredentials: true
 
           - task: PowerShell@2
-            displayName: "Download & Import PSRule.Rules.AzureDevOps via PAT"
-            env:
-              AZDO_PAT: $(AZDO-PAT)
+            displayName: "Set PSGallery Powershell Modules"
             inputs:
               targetType: inline
               pwsh: true
@@ -54,11 +52,10 @@ stages:
                 Import-Module PSRule -Force
 
                 Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
-                Import-Module Microsoft.PowerShell.PSResourceGet
-
+                Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
                 Install-Module -Name PSRule.Monitor -Repository PSGallery -Force
-                Import-Module PSRule.Monitor
+                Import-Module PSRule.Monitor -Force
 
                 Write-Host "PSGallery modules imported"
 
