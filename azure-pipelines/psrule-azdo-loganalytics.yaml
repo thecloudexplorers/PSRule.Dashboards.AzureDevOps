@@ -84,7 +84,7 @@ stages:
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
 
-                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
+                $azureDevOpsOrganizationName = "$(AZDO-ORGANIZATION)"
                 $project = "$(project)"
                 $feedName = "$(feedName)"
 
