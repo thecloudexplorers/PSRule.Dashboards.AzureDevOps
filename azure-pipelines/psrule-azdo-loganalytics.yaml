@@ -141,7 +141,7 @@ stages:
 
                 Write-Host "##[endgroup]"
 
-                ###########################################################################
+                #region Import custom module [PSRule.Rules.AzureDevOps]
 
                 Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
 
@@ -155,18 +155,17 @@ stages:
 
                 Write-Host "##[endgroup]"
 
-                ###########################################################################
+                #endregion
+
+                #region Exporting Azure DevOps Data
+
                 Write-Host "##[group]Exporting Azure DevOps Data"
 
                 Write-Host "Exporting"
-                $azureDevOpsOrganizationName = "$(azureDevOpsOrganizationName)"
-                $azureDevOpsOrganizationId = "$(azureDevOpsOrganizationId)"
 
                 # Generates a new bearer token for Azure DevOps API
                 Write-Host "Generates a new bearer token for Azure DevOps API"
-                $tenantId = '$(tenantId)'
-                $clientId = '$(clientId)'
-                $clientSecret = '$(clientSecret)'
+
 
                 # Azure DevOps API Scope ID - It never changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
                 $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
@@ -178,16 +177,27 @@ stages:
                     grant_type    = "client_credentials"
                 }
                 $bearerToken = $tokenResponse.access_token
-                Write-Host "Bearer Token: [$bearerToken]"
 
                 Write-Host "Connecting to Azure DevOps"
-                Connect-AzDevOps -Organization $azureDevOpsOrganizationName -OrganizationId $azureDevOpsOrganizationId -AccessToken $bearerToken
+
+                Connect-AzDevOps -Organization $targetAdoOrganizationName -OrganizationId $targetAdoOrganizationID -AccessToken $bearerToken
+
+                # $existingOutput = Get-Item $reportOutputPath -ErrorAction SilentlyContinue
+
+                # if ($existingOutput) {
+                #     Write-Host "Removing existing output directory"
+                #     Remove-Item $reportOutputPath -Force -Recurse
+                # }
+
+                Write-Host "Creating output directory"
+                New-Item -ItemType Directory $reportOutputPath -Force
 
                 Write-Host "Exporting Azure DevOps Data"
-
-                Export-AzDevOpsOrganizationRuleData -Organization "tcsnlpscan" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -OutputPath "$(Build.ArtifactStagingDirectory)/export"
+                Export-AzDevOpsOrganizationRuleData $targetAdoOrganizationName -OrganizationId $targetAdoOrganizationID -OutputPath $reportOutputPath
 
                 Write-Host "##[endgroup]"
+
+                #endregion
 
                 ###########################################################################
                 Write-Host "##[group]Analysing Azure DevOps Data"
