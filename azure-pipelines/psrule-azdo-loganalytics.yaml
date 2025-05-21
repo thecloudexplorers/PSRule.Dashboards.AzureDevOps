@@ -100,6 +100,8 @@ stages:
                 $targetAdoOrganizationName =  "$(azureDevOpsOrganizationName)"
                 $targetAdoOrganizationID = "$(azureDevOpsOrganizationId)"
 
+                $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
+
                 # Build feed URL (NuGet v3 for PSResourceGet)
                 $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
 
