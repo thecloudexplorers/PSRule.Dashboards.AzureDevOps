@@ -141,19 +141,15 @@ stages:
 
                 ###########################################################################
 
-                # Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery -Force
-                # Import-Module PSRule.Rules.AzureDevOps
-
                 Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
 
-                # Install-Module PSRule.Rules.AzureDevOps -Scope CurrentUser -Repository PSGallery
-
-                # Uncomment, this installs module from private artifacts
+                # Installs module from private artifacts
                 Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
-                Import-Module PSRule.Rules.AzureDevOps
+
+                Import-Module PSRule.Rules.AzureDevOps 
 
                 Get-InstalledModule PSRule.Rules.AzureDevOps -ErrorAction SilentlyContinue
-                Get-PSResource PSRule.Rules.AzureDevOps -ErrorAction SilentlyContinue
+                Get-InstalledPSResource PSRule.Rules.AzureDevOps -ErrorAction SilentlyContinue
 
                 Write-Host "##[endgroup]"
 
