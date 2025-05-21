@@ -52,7 +52,13 @@ stages:
                 Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
                 Install-Module -Name PSRule.Monitor -Repository PSGallery -Force
                 Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
+                Write-Host "##[endgroup]"
 
+                Write-Host "##[group] Importing PowerShell Modules"
+
+                Import-Module PSRule -Force
+                Import-Module Microsoft.PowerShell.PSResourceGet -Force
+                Import-Module PSRule.Monitor -Force
                 Import-Module Microsoft.PowerShell.SecretStore -Force
 
                 Write-Host "PSGallery modules installed"
@@ -70,38 +76,11 @@ stages:
                 # Ensure TLS 1.2 for secure connection
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-                # Remove-Module  "PSRule.Rules.AzureDevOps" -Force
 
 
-                Write-Host "Removing module [PSRule.Rules.AzureDevOps]"
-                # Uninstall-Module -Name PSRule.Rules.AzureDevOps
-
-                ###########################################################################
-                # Write-Host "##[group]Setting PSGallery Powershell Modules"
-
-                # Uninstall-Module PSRule -AllVersions           
-
-                # Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
-                # Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
-                # Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
-                     
-                # Install-Module -Name PSRule.Monitor -Repository PSGallery -Force      
-
-
-                # Install-Module PSRule -Scope CurrentUser -Repository PSGallery
-
-                # Import-Module PSRule -Force                
-
-                # Import-Module Microsoft.PowerShell.SecretStore
-                # Import-Module Microsoft.PowerShell.SecretManagement
-                # Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
-                # Import-Module PSRule.Monitor
-
-                Write-Host "##[group] Import PowerShell Modules"
-
-                Import-Module PSRule -Force
-                Import-Module Microsoft.PowerShell.PSResourceGet -Force
-                Import-Module PSRule.Monitor -Force
+                # Import-Module PSRule -Force
+                # Import-Module Microsoft.PowerShell.PSResourceGet -Force
+                # Import-Module PSRule.Monitor -Force
 
                 Write-Host "##[endgroup]"
 
