@@ -211,6 +211,9 @@ stages:
                     -Culture en
 
                 Write-Host "Exporting analysis to Log Analytics..."
+                Write-Host "Items: [$result.Count]"
+                $result
+
                 $result | Send-PSRuleMonitorRecord -WorkspaceId '$(logAnalyticsWorkspaceId)' -SharedKey '$(logAnalyticsSharedKey)' -LogName PSRule    
 
                 Write-Host "##[endgroup]"
