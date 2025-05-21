@@ -97,8 +97,8 @@ stages:
                 $clientId = "$(clientId)"
                 $clientSecret = "$(clientSecret)"
 
-                $targetAdoOrganizationName =  $(azureDevOpsOrganizationName)
-                $targetAdoOrganizationID = $(azureDevOpsOrganizationId)
+                $targetAdoOrganizationName =  "$(azureDevOpsOrganizationName)"
+                $targetAdoOrganizationID = "$(azureDevOpsOrganizationId)"
 
                 # Build feed URL (NuGet v3 for PSResourceGet)
                 $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
