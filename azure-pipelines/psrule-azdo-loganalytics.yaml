@@ -70,8 +70,8 @@ stages:
                   OrganizationName = '$(azureDevOpsArtifactOrganizationName)'
                   ProjectName = '$(azureDevOpsArtifactProjectName)'
                   FeedName = '$(azureDevOpsArtifactProjectNameFeedName)'
-                  PatUser = '$env:azureDevOpsArtifactPatUser'
-                  PatToken = '$env:azureDevOpsArtifactPatUser'
+                  PatUser = '$(azureDevOpsArtifactPatUser)'
+                  PatToken = '$(azureDevOpsArtifactPatToken)'
                 }
 
                 . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" @ArtifactFeed
