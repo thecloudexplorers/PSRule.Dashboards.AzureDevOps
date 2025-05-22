@@ -77,29 +77,44 @@ stages:
 
                 . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" @ArtifactFeed
 
+          # - task: PowerShell@2
+          #   displayName: "Exporting Azure DevOps data"
+          #   inputs:
+          #     targetType: inline
+          #     pwsh: true
+          #     script: |
+          #       $ExportAzDo = @{
+          #         TargetAzureDevOpsOrganizationName = "$(targetAzureDevOpsOrganizationName)"
+          #         TargetAzureDevOpsOrganizationID = "$(targetAzureDevOpsOrganizationID)"
+          #         LogAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"
+          #         LogAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
+          #         TenantId = "$(tenantId)"
+          #         ClientId = "$(clientId)"
+          #         ClientSecret = "$(clientSecret)"
+          #         ReportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
+          #       }
+
+          #       . "$(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1" @ExportAzDo
+
           - task: PowerShell@2
             displayName: "Exporting Azure DevOps data"
             inputs:
-              targetType: inline
+              filePath: $(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1
               pwsh: true
-              script: |
-                $ExportAzDo = @{
-                  TargetAzureDevOpsOrganizationName = "$(targetAzureDevOpsOrganizationName)"  
-                  TargetAzureDevOpsOrganizationID = "$(targetAzureDevOpsOrganizationID)"  
-                  LogAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"  
-                  LogAnalyticsSharedKey = "$(logAnalyticsSharedKey)"  
-                  TenantId = "$(tenantId)"  
-                  ClientId = "$(clientId)"  
-                  ClientSecret = "$(clientSecret)"  
-                  ReportOutputPath = "$(Build.ArtifactStagingDirectory)/export"    
-                }
-
-                . "$(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1" @ExportAzDo
+              arguments: >
+                -TargetAzureDevOpsOrganizationName "$(targetAzureDevOpsOrganizationName)"  
+                -TargetAzureDevOpsOrganizationID "$(targetAzureDevOpsOrganizationID)"  
+                -LogAnalyticsWorkspaceId "$(logAnalyticsWorkspaceId)"  
+                -LogAnalyticsSharedKey "$(logAnalyticsSharedKey)"  
+                -TenantId "$(tenantId)"  
+                -ClientId "$(clientId)"  
+                -ClientSecret "$(clientSecret)"  
+                -ReportOutputPath "$(Build.ArtifactStagingDirectory)/export"
 
           - task: PowerShell@2
             displayName: "Run PSRule Analysis"
             inputs:
-              filePath: "$(Pipeline.Workspace)/s/src/scripts/Invoke-AzDevOpsPSRuleAnalysis.ps1"
+              filePath: $(Pipeline.Workspace)/s/src/scripts/Invoke-AzDevOpsPSRuleAnalysis.ps1
               pwsh: true
               arguments: >
                 -LogAnalyticsWorkspaceId '$(logAnalyticsWorkspaceId)'
