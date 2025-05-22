@@ -60,8 +60,6 @@ stages:
 
           - task: PowerShell@2
             displayName: "Download & Import PSRule.Rules.AzureDevOps via PAT"
-            env:
-              AZDO_PAT: $(AZDO-PAT)
             inputs:
               targetType: inline
               pwsh: true
@@ -73,7 +71,6 @@ stages:
                 Import-Module Microsoft.PowerShell.SecretStore -Force
                 Import-Module Microsoft.PowerShell.SecretManagement  -Force
                 Import-Module Microsoft.PowerShell.PSResourceGet -Force
-
 
                 Write-Host "PSGallery modules imported."
 
