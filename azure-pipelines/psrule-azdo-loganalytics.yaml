@@ -70,7 +70,7 @@ stages:
                 -OrganizationName '$(azureDevOpsArtifactOrganizationName)'
                 -ProjectName '$(azureDevOpsArtifactProjectName)' 
                 -FeedName '$(azureDevOpsArtifactProjectNameFeedName)'
-          # -PatUser '$(azureDevOpsArtifactPatUser)'
+                -PatUser '$(azureDevOpsArtifactPatUser)'
           # -PatToken '$(azureDevOpsArtifactPatToken)'
           # -CustomModules 'PSRule.Rules.AzureDevOps'
 

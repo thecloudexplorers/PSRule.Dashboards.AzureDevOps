@@ -64,10 +64,10 @@ param(
     [string] $ProjectName,
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string] $FeedName#,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $PatUser,
+    [string] $FeedName,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $PatUser#,
     # [Parameter(Mandatory)]
     # [ValidateNotNullOrEmpty()]
     # [string] $PatToken,
