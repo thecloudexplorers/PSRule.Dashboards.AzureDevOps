@@ -93,6 +93,12 @@ stages:
 
           - task: PowerShell@2
             displayName: "Install PSRule.Rules.AzureDevOps module"
+            env:
+              azureDevOpsArtifactOrganizationName: $(azureDevOpsArtifactOrganizationName)
+              azureDevOpsArtifactProjectName: $(azureDevOpsArtifactProjectName)
+              azureDevOpsArtifactProjectNameFeedName: $(azureDevOpsArtifactProjectNameFeedName)
+              azureDevOpsArtifactPatUser: $(azureDevOpsArtifactPatUser)
+              azureDevOpsArtifactPatToken: $(azureDevOpsArtifactPatToken)
             inputs:
               targetType: inline
               pwsh: true
@@ -111,12 +117,12 @@ stages:
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
 
-                $azureDevOpsArtifactOrganizationName = "$(azureDevOpsArtifactOrganizationName)"
-                $azureDevOpsArtifactProjectName = "$(azureDevOpsArtifactProjectName)"
-                $azureDevOpsArtifactProjectNameFeedName = "$(azureDevOpsArtifactProjectNameFeedName)"
+                $azureDevOpsArtifactOrganizationName = "$env:azureDevOpsArtifactOrganizationName"
+                $azureDevOpsArtifactProjectName = "$env:azureDevOpsArtifactProjectName"
+                $azureDevOpsArtifactProjectNameFeedName = "$env:azureDevOpsArtifactProjectNameFeedName"
 
-                $azureDevOpsArtifactPatUser = "$(azureDevOpsArtifactPatUser)"
-                $azureDevOpsArtifactPatToken = "$(azureDevOpsArtifactPatToken)"
+                $azureDevOpsArtifactPatUser = "$env:azureDevOpsArtifactPatUser"
+                $azureDevOpsArtifactPatToken = "$env:azureDevOpsArtifactPatToken"
 
                 # Build feed URL (NuGet v3 for PSResourceGet)
                 $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsArtifactOrganizationName/$azureDevOpsArtifactProjectName/_packaging/$azureDevOpsArtifactProjectNameFeedName/nuget/v3/index.json"
