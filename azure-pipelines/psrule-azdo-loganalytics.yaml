@@ -92,8 +92,6 @@ stages:
                 $azureDevOpsArtifactPatUser = "$(azureDevOpsArtifactPatUser)"
                 $azureDevOpsArtifactPatToken = "$(azureDevOpsArtifactPatToken)"
 
-                6erjzz8EIOVJDPra47Vg6GtAy5yDxNMcQm1wX3atfKkJvZVOgunRJQQJ99BEACAAAAASqNntAAASAZDO3bBw
-
                 $tenantId = "$(tenantId)"
                 $clientId = "$(clientId)"
                 $clientSecret = "$(clientSecret)"
