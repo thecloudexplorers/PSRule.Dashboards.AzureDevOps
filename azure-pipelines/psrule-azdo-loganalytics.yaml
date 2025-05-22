@@ -71,6 +71,7 @@ stages:
                   ProjectName = '$(azureDevOpsArtifactProjectName)' 
                   FeedName = '$(azureDevOpsArtifactProjectNameFeedName)'
                   PatUser = '$env:azureDevOpsArtifactPatUser'
+                  PatToken = '$env:azureDevOpsArtifactPatUser'
                 }
 
 
