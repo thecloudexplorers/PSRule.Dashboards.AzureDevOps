@@ -66,7 +66,15 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" -PatUser '$env:azureDevOpsArtifactPatUser'
+                $ArtifactFeed = @{ 
+                  -OrganizationName '$(azureDevOpsArtifactOrganizationName)'
+                  -ProjectName '$(azureDevOpsArtifactProjectName)' 
+                  -FeedName '$(azureDevOpsArtifactProjectNameFeedName)'
+                  -PatUser '$env:azureDevOpsArtifactPatUser'
+                }
+
+
+                . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" @ArtifactFeed
 
           - task: PowerShell@2
             displayName: "Install PSRule.Rules.AzureDevOps module"
