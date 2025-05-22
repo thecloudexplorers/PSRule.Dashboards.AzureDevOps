@@ -69,7 +69,10 @@ param(
     [string] $PatUser,
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string] $PatToken
+    [string] $PatToken,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    $CustomModules
 )
 
 Begin {
@@ -77,7 +80,6 @@ Begin {
     $SecretName = 'MyCredential'
     $RepositoryName = 'PowershellPSResourceRepository'
     $PasswordTimeout = -1
-    $CustomModules = @('PSRule.Rules.AzureDevOps')    
 
     Write-Host "##[group]Importing PowerShell Modules"
     try {
