@@ -44,16 +44,15 @@
     PSResource repository from which to install custom modules. Defaults to the same as RepositoryName.
 
 .EXAMPLE
-    .\Initialize-ArtifactFeed.ps1 \
-      -OrganizationName Contoso \
-      -ProjectName WebApp \
-      -FeedName Modules \
-      -PatUser build \
-      -PatToken abc123 \
-      -CustomModules 'PSRule.Rules.AzureDevOps','Another.Module' \
+    .\Initialize-ArtifactFeed.ps1 `
+      -OrganizationName Contoso `
+      -ProjectName WebApp `
+      -FeedName Modules `
+      -PatUser build `
+      -PatToken abc123 `
+      -CustomModules 'PSRule.Rules.AzureDevOps','Another.Module' `
       -Verbose
 #>
-# Initialize-ArtifactFeed {
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
@@ -73,16 +72,7 @@ param(
     [string] $PatToken
 )
 
-
-
 Begin {
-
-
-    # $OrganizationName = "$env:azureDevOpsArtifactOrganizationName"
-    # $ProjectName = "$env:azureDevOpsArtifactProjectName"
-    # $FeedName = "$env:azureDevOpsArtifactProjectNameFeedName"
-    # $PatUser = "$env:azureDevOpsArtifactPatUser"
-    # $PatToken = "$env:azureDevOpsArtifactPatToken"
     $VaultName = 'SecretVault'
     $SecretName = 'MyCredential'
     $RepositoryName = 'PowershellPSResourceRepository'
@@ -142,7 +132,7 @@ Process {
 
     Write-Host "##[group]Import custom modules [$($CustomModules -join ', ')]"
     foreach ($module in $CustomModules) {
-        Write-Host "Installing module [$module] from repository [$RepositoryName]"
+        Write-Host "Installing module [$module] from repository [$FeedName]"
         Install-PSResource -Name $module -Repository $RepositoryName -Credential $credentials -ErrorAction Stop
     }
     Write-Host "##[endgroup]"
@@ -151,5 +141,3 @@ Process {
 End {
     Write-Verbose 'Initialization complete.'
 }
-
-# }
