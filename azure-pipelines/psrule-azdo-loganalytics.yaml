@@ -58,15 +58,6 @@ stages:
 
                 Write-Host "PSGallery modules installed"
 
-                #region Import custom module [PSRule.Rules.AzureDevOps]
-
-                Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
-
-                # Installs module from private artifacts
-                Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
-
-                Write-Host "##[endgroup]"
-
                 Write-Host "##[endgroup]"
 
           - task: PowerShell@2
@@ -142,6 +133,15 @@ stages:
 
                 Write-Host "Register PSResource repository"
                 Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
+
+                Write-Host "##[endgroup]"
+
+                #region Import custom module [PSRule.Rules.AzureDevOps]
+
+                Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
+
+                # Installs module from private artifacts
+                Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
 
                 Write-Host "##[endgroup]"
 
