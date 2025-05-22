@@ -96,6 +96,16 @@ stages:
 
                 . "$(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1" @ExportAzDo
 
+          - task: PowerShell@2
+            displayName: "Run PSRule Analysis"
+            inputs:
+              filePath: "scripts/Invoke-AzDevOpsPSRuleAnalysis.ps1"
+              pwsh: true
+              arguments: >
+                -LogAnalyticsWorkspaceId '$(logAnalyticsWorkspaceId)'
+                -LogAnalyticsSharedKey '$(logAnalyticsSharedKey)'
+                -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
+
           # - task: PowerShell@2
           #   displayName: "Exporting Azure DevOps data"
           #   inputs:
@@ -168,52 +178,52 @@ stages:
 
           #       #endregion
 
-          - task: PowerShell@2
-            displayName: "Analyzing Azure DevOps data"
-            inputs:
-              targetType: inline
-              pwsh: true
-              script: |
-                Write-Host "##[group]Importing PowerShell Modules"
+          # - task: PowerShell@2
+          #   displayName: "Analyzing Azure DevOps data"
+          #   inputs:
+          #     targetType: inline
+          #     pwsh: true
+          #     script: |
+          #       Write-Host "##[group]Importing PowerShell Modules"
 
-                Import-Module PSRule.Monitor -Force
+          #       Import-Module PSRule.Monitor -Force
 
-                Write-Host "PSGallery modules imported."
+          #       Write-Host "PSGallery modules imported."
 
-                Write-Host "##[endgroup]"
+          #       Write-Host "##[endgroup]"
 
-                Write-Host "##[group]Prepare variables"
+          #       Write-Host "##[group]Prepare variables"
 
-                $logAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"
-                $logAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
+          #       $logAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"
+          #       $logAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
 
-                $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
+          #       $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
 
-                Write-Host "##[endgroup]"
-                   
-                #region Analyze Azure DevOps Data
+          #       Write-Host "##[endgroup]"
 
-                Write-Host "##[group]Analysing Azure DevOps Data"
+          #       #region Analyze Azure DevOps Data
 
-                # Get all directories with files
-                $outputFiles = Get-ChildItem -Path $reportOutputPath -File -Recurse | `
-                    Select-Object -ExpandProperty DirectoryName -Unique | `
-                    ForEach-Object { Join-Path $_ '*.json' }
-                    
-                Assert-PSRule -Module PSRule.Rules.AzureDevOps -InputPath $outputFiles -ErrorAction SilentlyContinue
+          #       Write-Host "##[group]Analysing Azure DevOps Data"
 
-                $result = Invoke-PSRule `
-                    -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
-                    -InputPath $outputFiles `
-                    -Format Detect `
-                    -Culture en
+          #       # Get all directories with files
+          #       $outputFiles = Get-ChildItem -Path $reportOutputPath -File -Recurse | `
+          #           Select-Object -ExpandProperty DirectoryName -Unique | `
+          #           ForEach-Object { Join-Path $_ '*.json' }
 
-                Write-Host "Sending results to Log Analytics"
-                $result | Send-PSRuleMonitorRecord -WorkspaceId $logAnalyticsWorkspaceId -SharedKey $logAnalyticsSharedKey -LogName PSRule    
+          #       Assert-PSRule -Module PSRule.Rules.AzureDevOps -InputPath $outputFiles -ErrorAction SilentlyContinue
 
-                Write-Host "##[endgroup]"
+          #       $result = Invoke-PSRule `
+          #           -Module PSRule.Rules.AzureDevOps, PSRule.Monitor `
+          #           -InputPath $outputFiles `
+          #           -Format Detect `
+          #           -Culture en
 
-                #endregion
+          #       Write-Host "Sending results to Log Analytics"
+          #       $result | Send-PSRuleMonitorRecord -WorkspaceId $logAnalyticsWorkspaceId -SharedKey $logAnalyticsSharedKey -LogName PSRule
+
+          #       Write-Host "##[endgroup]"
+
+          #       #endregion
 
           - task: PublishPipelineArtifact@1
             displayName: Publishing Azure DevOps Exports & Reports
