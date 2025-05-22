@@ -56,61 +56,38 @@
 # Initialize-ArtifactFeed {
 [CmdletBinding()]
 param(
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $OrganizationName,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $ProjectName,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $FeedName,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $PatUser,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $PatToken,
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $VaultName = 'SecretVault',
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $SecretName = 'MyCredential',
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $RepositoryName = 'PowershellPSResourceRepository',
-    # [Parameter()]
-    # [int] $PasswordTimeout = -1,
-    # [Parameter()]
-    # [string[]] $CustomModules = @('PSRule.Rules.AzureDevOps'),
-    # [Parameter()]
-    # [string] $CustomModuleRepository = ''
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $OrganizationName,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $ProjectName,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $FeedName,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $PatUser,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $PatToken
 )
 
 
 
 Begin {
 
-    
-    # $azureDevOpsArtifactOrganizationName = "$env:azureDevOpsArtifactOrganizationName"
-    # $azureDevOpsArtifactProjectName = "$env:azureDevOpsArtifactProjectName"
-    # $azureDevOpsArtifactProjectNameFeedName = "$env:azureDevOpsArtifactProjectNameFeedName"
 
-    # $azureDevOpsArtifactPatUser = "$env:azureDevOpsArtifactPatUser"
-    # $azureDevOpsArtifactPatToken = "$env:azureDevOpsArtifactPatToken"
-
-    $OrganizationName = "$env:azureDevOpsArtifactOrganizationName"
-    $ProjectName = "$env:azureDevOpsArtifactProjectName"
-    $FeedName = "$env:azureDevOpsArtifactProjectNameFeedName"
-    $PatUser = "$env:azureDevOpsArtifactPatUser"
-    $PatToken = "$env:azureDevOpsArtifactPatToken"
+    # $OrganizationName = "$env:azureDevOpsArtifactOrganizationName"
+    # $ProjectName = "$env:azureDevOpsArtifactProjectName"
+    # $FeedName = "$env:azureDevOpsArtifactProjectNameFeedName"
+    # $PatUser = "$env:azureDevOpsArtifactPatUser"
+    # $PatToken = "$env:azureDevOpsArtifactPatToken"
     $VaultName = 'SecretVault'
     $SecretName = 'MyCredential'
     $RepositoryName = 'PowershellPSResourceRepository'
     $PasswordTimeout = -1
-    $CustomModules = @('PSRule.Rules.AzureDevOps')
-    $CustomModuleRepository = ''
+    $CustomModules = @('PSRule.Rules.AzureDevOps')    
 
     Write-Host "##[group]Importing PowerShell Modules"
     try {
@@ -122,10 +99,7 @@ Begin {
         Write-Error "Failed to import modules: $_"
         throw
     }
-    Write-Host "##[endgroup]"
-
-    # Default custom repository to the registered repository
-    if (-not $CustomModuleRepository) { $CustomModuleRepository = $RepositoryName }
+    Write-Host "##[endgroup]"   
 
         
     $Password = -join ((97..122) | Get-Random -Count 10 | ForEach-Object { [char]$_ })
@@ -168,8 +142,8 @@ Process {
 
     Write-Host "##[group]Import custom modules [$($CustomModules -join ', ')]"
     foreach ($module in $CustomModules) {
-        Write-Host "Installing module [$module] from repository [$CustomModuleRepository]"
-        Install-PSResource -Name $module -Repository $CustomModuleRepository -Credential $credentials -ErrorAction Stop
+        Write-Host "Installing module [$module] from repository [$RepositoryName]"
+        Install-PSResource -Name $module -Repository $RepositoryName -Credential $credentials -ErrorAction Stop
     }
     Write-Host "##[endgroup]"
 }
