@@ -92,12 +92,13 @@ stages:
                 $azureDevOpsArtifactPatUser = "$(azureDevOpsArtifactPatUser)"
                 $azureDevOpsArtifactPatToken = "$(azureDevOpsArtifactPatToken)"
 
+                #TODO: Credential Info, should be moved to a Azure pwsh script and use persist credentials
                 $tenantId = "$(tenantId)"
                 $clientId = "$(clientId)"
                 $clientSecret = "$(clientSecret)"
 
-                $targetAdoOrganizationName =  "$(azureDevOpsOrganizationName)"
-                $targetAdoOrganizationID = "$(azureDevOpsOrganizationId)"
+                $targetAzureDevOpsOrganizationName =  "$(targetAzureDevOpsOrganizationName)"
+                $targetAzureDevOpsOrganizationID = "$(targetAzureDevOpsOrganizationID)"
 
                 $logAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"
                 $logAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
@@ -192,7 +193,7 @@ stages:
 
                 Write-Host "Connecting to Azure DevOps"
 
-                Connect-AzDevOps -Organization $targetAdoOrganizationName -OrganizationId $targetAdoOrganizationID -AccessToken $bearerToken
+                Connect-AzDevOps -Organization $targetAzureDevOpsOrganizationName -OrganizationId $targetAzureDevOpsOrganizationID -AccessToken $bearerToken
 
                 # $existingOutput = Get-Item $reportOutputPath -ErrorAction SilentlyContinue
 
@@ -205,7 +206,7 @@ stages:
                 New-Item -ItemType Directory $reportOutputPath -Force
 
                 Write-Host "Exporting Azure DevOps Data"
-                Export-AzDevOpsOrganizationRuleData $targetAdoOrganizationName -OrganizationId $targetAdoOrganizationID -OutputPath $reportOutputPath
+                Export-AzDevOpsOrganizationRuleData $targetAzureDevOpsOrganizationName -OrganizationId $targetAzureDevOpsOrganizationID -OutputPath $reportOutputPath
 
                 Write-Host "##[endgroup]"
 
