@@ -66,13 +66,9 @@ stages:
               script: |
                 Write-Host "##[group]Importing PowerShell Modules"
 
-                Import-Module PSRule -Force
-                Import-Module PSRule.Monitor -Force
                 Import-Module Microsoft.PowerShell.SecretStore -Force
                 Import-Module Microsoft.PowerShell.SecretManagement  -Force
-                Import-Module Microsoft.PowerShell.PSResourceGet -Force
-
-                Write-Host "PSGallery modules imported."
+                Import-Module Microsoft.PowerShell.PSResourceGet -Force                
 
                 Write-Host "##[endgroup]"
 
@@ -93,14 +89,6 @@ stages:
                 $tenantId = "$(tenantId)"
                 $clientId = "$(clientId)"
                 $clientSecret = "$(clientSecret)"
-
-                $targetAzureDevOpsOrganizationName =  "$(targetAzureDevOpsOrganizationName)"
-                $targetAzureDevOpsOrganizationID = "$(targetAzureDevOpsOrganizationID)"
-
-                $logAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"
-                $logAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
-
-                $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
 
                 # Build feed URL (NuGet v3 for PSResourceGet)
                 $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsArtifactOrganizationName/$azureDevOpsArtifactProjectName/_packaging/$azureDevOpsArtifactProjectNameFeedName/nuget/v3/index.json"
@@ -158,6 +146,8 @@ stages:
                 # Installs module from private artifacts
                 Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
 
+                Write-Host "##[endgroup]"
+
           - task: PowerShell@2
             displayName: "Exporting Azure DevOps data"
             inputs:
@@ -168,31 +158,13 @@ stages:
 
                 Import-Module PSRule -Force
                 Import-Module PSRule.Monitor -Force
-                Import-Module Microsoft.PowerShell.SecretStore -Force
-                Import-Module Microsoft.PowerShell.SecretManagement  -Force
-                Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
                 Write-Host "PSGallery modules imported."
 
                 Write-Host "##[endgroup]"
 
-                # Ensure TLS 1.2 for secure connection
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
-
-                $azureDevOpsArtifactOrganizationName = "$(azureDevOpsArtifactOrganizationName)"
-                $azureDevOpsArtifactProjectName = "$(azureDevOpsArtifactProjectName)"
-                $azureDevOpsArtifactProjectNameFeedName = "$(azureDevOpsArtifactProjectNameFeedName)"
-
-                $azureDevOpsArtifactPatUser = "$(azureDevOpsArtifactPatUser)"
-                $azureDevOpsArtifactPatToken = "$(azureDevOpsArtifactPatToken)"
-
-                #TODO: Credential Info, should be moved to a Azure pwsh script and use persist credentials
-                $tenantId = "$(tenantId)"
-                $clientId = "$(clientId)"
-                $clientSecret = "$(clientSecret)"
 
                 $targetAzureDevOpsOrganizationName =  "$(targetAzureDevOpsOrganizationName)"
                 $targetAzureDevOpsOrganizationID = "$(targetAzureDevOpsOrganizationID)"
@@ -201,13 +173,6 @@ stages:
                 $logAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
 
                 $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
-
-                # Build feed URL (NuGet v3 for PSResourceGet)
-                $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsArtifactOrganizationName/$azureDevOpsArtifactProjectName/_packaging/$azureDevOpsArtifactProjectNameFeedName/nuget/v3/index.json"
-
-                # Convert PAT to secure credential
-                $secureToken = ConvertTo-SecureString $azureDevOpsArtifactPatToken -AsPlainText -Force
-                $credentials = New-Object System.Management.Automation.PSCredential($azureDevOpsArtifactPatUser, $secureToken)
 
                 Write-Host "##[endgroup]"
 
