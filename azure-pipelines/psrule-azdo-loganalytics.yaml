@@ -172,6 +172,11 @@ stages:
                 $logAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"
                 $logAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
 
+                #TODO: Credential Info, should be moved to a Azure pwsh script and use persist credentials
+                $tenantId = "$(tenantId)"
+                $clientId = "$(clientId)"
+                $clientSecret = "$(clientSecret)"
+
                 $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
 
                 Write-Host "##[endgroup]"
