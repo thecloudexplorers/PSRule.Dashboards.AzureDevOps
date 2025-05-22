@@ -59,7 +59,7 @@ stages:
                 Write-Host "##[endgroup]"
 
           - task: PowerShell@2
-            displayName: "Install PSRule.Rules.AzureDevOps"
+            displayName: "Install PSRule.Rules.AzureDevOps module"
             inputs:
               targetType: inline
               pwsh: true
@@ -159,7 +159,7 @@ stages:
                 Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
 
           - task: PowerShell@2
-            displayName: "Download & Import PSRule.Rules.AzureDevOps via PAT"
+            displayName: "Exporting Azure DevOps data"
             inputs:
               targetType: inline
               pwsh: true
@@ -258,7 +258,7 @@ stages:
                 # # Installs module from private artifacts
                 # Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
 
-                # Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
+                Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
 
 
                 Import-Module PSRule.Rules.AzureDevOps 
