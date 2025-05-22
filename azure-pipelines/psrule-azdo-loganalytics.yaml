@@ -77,17 +77,17 @@ stages:
 
                 . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" @ArtifactFeed
 
-          - task: PowerShell@2
-            displayName: "Install PSRule.Rules.AzureDevOps module"
-            inputs:
-              targetType: filePath
-              pwsh: true
-              filePath: "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1"
-              arguments: >
-                -OrganizationName '$(azureDevOpsArtifactOrganizationName)'
-                -ProjectName '$(azureDevOpsArtifactProjectName)' 
-                -FeedName '$(azureDevOpsArtifactProjectNameFeedName)'
-                -PatUser '$env:azureDevOpsArtifactPatUser'
+          # - task: PowerShell@2
+          #   displayName: "Install PSRule.Rules.AzureDevOps module"
+          #   inputs:
+          #     targetType: filePath
+          #     pwsh: true
+          #     filePath: "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1"
+          #     arguments: >
+          #       -OrganizationName '$(azureDevOpsArtifactOrganizationName)'
+          #       -ProjectName '$(azureDevOpsArtifactProjectName)'
+          #       -FeedName '$(azureDevOpsArtifactProjectNameFeedName)'
+          #       -PatUser '$env:azureDevOpsArtifactPatUser'
 
           # -PatToken '$(azureDevOpsArtifactPatToken)'
           # -CustomModules 'PSRule.Rules.AzureDevOps'

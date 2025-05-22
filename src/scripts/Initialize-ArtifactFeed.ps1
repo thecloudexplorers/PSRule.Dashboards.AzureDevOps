@@ -119,7 +119,9 @@ Process {
     Write-Host "##[group]Prepare variables"
     $feedUrl = "https://pkgs.dev.azure.com/$OrganizationName/$ProjectName/_packaging/$FeedName/nuget/v3/index.json"
     $secureToken = ConvertTo-SecureString -String $PatToken -AsPlainText -Force
-    $credentials = New-Object PSCredential($PatUser, $secureToken)
+    # $credentials = New-Object PSCredential($PatUser, $secureToken)
+    $credentials = New-Object System.Management.Automation.PSCredential($PatUser, $secureToken)
+
     Write-Host "##[endgroup]"
 
     Write-Host "##[group]Set secret vault and secret store"
