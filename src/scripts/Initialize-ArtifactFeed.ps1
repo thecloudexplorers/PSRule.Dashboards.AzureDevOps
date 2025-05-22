@@ -27,13 +27,13 @@
     Array of module names to install after registering the repository.
 
 .EXAMPLE
-    .\Initialize-ArtifactFeed.ps1 \
-      -OrganizationName Contoso \
-      -ProjectName WebApp \
-      -FeedName Modules \
-      -PatUser build \
-      -PatToken abc123 \
-      -CustomModules 'PSRule.Rules.AzureDevOps','Another.Module' \
+    .\Initialize-ArtifactFeed.ps1 `
+      -OrganizationName Contoso `
+      -ProjectName WebApp `
+      -FeedName Modules `
+      -PatUser build `
+      -PatToken abc123 `
+      -CustomModules 'PSRule.Rules.AzureDevOps','Another.Module' `
       -Verbose
 #>
 [CmdletBinding()]
