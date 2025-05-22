@@ -53,7 +53,7 @@
       -CustomModules 'PSRule.Rules.AzureDevOps','Another.Module' \
       -Verbose
 #>
-function Initialize-ArtifactFeed {
+Initialize-ArtifactFeed {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
