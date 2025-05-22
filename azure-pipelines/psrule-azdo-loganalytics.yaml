@@ -61,6 +61,14 @@ stages:
                 Write-Host "##[endgroup]"
 
           - task: PowerShell@2
+            displayName: "Install PSGallery Powershell Modules Inline"
+            inputs:
+              targetType: inline
+              pwsh: true
+              script: |
+                . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" -PatUser '$env:azureDevOpsArtifactPatUser'
+
+          - task: PowerShell@2
             displayName: "Install PSRule.Rules.AzureDevOps module"
             inputs:
               targetType: filePath
