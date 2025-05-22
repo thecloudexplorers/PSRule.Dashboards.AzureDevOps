@@ -65,12 +65,12 @@ param(
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
     [string] $FeedName,
-    [Parameter(Mandatory)]
-    [ValidateNotNullOrEmpty()]
-    [string] $PatUser,
     # [Parameter(Mandatory)]
     # [ValidateNotNullOrEmpty()]
-    # [string] $PatToken,
+    # [string] $PatUser,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $PatToken,
     [Parameter()]
     [ValidateNotNullOrEmpty()]
     [string] $VaultName = 'SecretVault',
