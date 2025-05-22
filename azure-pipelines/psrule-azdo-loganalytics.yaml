@@ -85,13 +85,14 @@ stages:
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
 
-                $azureDevOpsOrganizationName = "$(AZDO-ORGANIZATION)"
-                $project = "$(project)"
-                $feedName = "$(feedName)"
+                $azureDevOpsArtifactOrganizationName = $(azureDevOpsArtifactOrganizationName)
+                $azureDevOpsArtifactProjectName = $(azureDevOpsArtifactProjectName)
+                $azureDevOpsArtifactProjectNameFeedName = $(azureDevOpsArtifactProjectNameFeedName)
 
-                # $patUser = "$(patUser)"
-                $patUser = "wesley.camargo@tcsnlps.onmicrosoft.com"
-                $patToken = "$(azdoArtifactPat)"
+                $azureDevOpsArtifactPatUser = "$(azureDevOpsArtifactPatUser)"
+                $azureDevOpsArtifactPatToken = "$(azureDevOpsArtifactPatToken)"
+
+                6erjzz8EIOVJDPra47Vg6GtAy5yDxNMcQm1wX3atfKkJvZVOgunRJQQJ99BEACAAAAASqNntAAASAZDO3bBw
 
                 $tenantId = "$(tenantId)"
                 $clientId = "$(clientId)"
@@ -106,11 +107,11 @@ stages:
                 $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
 
                 # Build feed URL (NuGet v3 for PSResourceGet)
-                $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsOrganizationName/$project/_packaging/$feedName/nuget/v3/index.json"
+                $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsArtifactOrganizationName/$azureDevOpsArtifactProjectName/_packaging/$azureDevOpsArtifactProjectNameFeedName/nuget/v3/index.json"
 
                 # Convert PAT to secure credential
-                $secureToken = ConvertTo-SecureString $patToken -AsPlainText -Force
-                $credentials = New-Object System.Management.Automation.PSCredential($patUser, $secureToken)
+                $secureToken = ConvertTo-SecureString $azureDevOpsArtifactPatToken -AsPlainText -Force
+                $credentials = New-Object System.Management.Automation.PSCredential($azureDevOpsArtifactPatUser, $secureToken)
 
                 Write-Host "##[endgroup]"
 
