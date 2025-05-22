@@ -67,25 +67,25 @@ param(
     [string] $FeedName,
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string] $PatUser#,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $PatToken,
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $VaultName = 'SecretVault',
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $SecretName = 'MyCredential',
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $RepositoryName = 'PowershellPSResourceRepository',
-    # [Parameter()]
-    # [int] $PasswordTimeout = -1,
-    # [Parameter()]
-    # [string[]] $CustomModules = @('PSRule.Rules.AzureDevOps'),
-    # [Parameter()]
-    # [string] $CustomModuleRepository = ''
+    [string] $PatUser,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $PatToken,
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [string] $VaultName = 'SecretVault',
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [string] $SecretName = 'MyCredential',
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [string] $RepositoryName = 'PowershellPSResourceRepository',
+    [Parameter()]
+    [int] $PasswordTimeout = -1,
+    [Parameter()]
+    [string[]] $CustomModules = @('PSRule.Rules.AzureDevOps'),
+    [Parameter()]
+    [string] $CustomModuleRepository = ''
 )
 
 
