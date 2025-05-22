@@ -226,7 +226,7 @@ stages:
           #       #endregion
 
           - task: PublishPipelineArtifact@1
-            displayName: Publishing Azure DevOps Exports & Reports
+            displayName: Publishing PSRule Analysis
             inputs:
               targetPath: $(Build.ArtifactStagingDirectory)/export
               artifactName: AzureDevOpsData
