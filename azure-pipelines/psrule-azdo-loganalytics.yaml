@@ -67,10 +67,10 @@ stages:
               pwsh: true
               script: |
                 $ArtifactFeed = @{ 
-                  -OrganizationName '$(azureDevOpsArtifactOrganizationName)'
-                  -ProjectName '$(azureDevOpsArtifactProjectName)' 
-                  -FeedName '$(azureDevOpsArtifactProjectNameFeedName)'
-                  -PatUser '$env:azureDevOpsArtifactPatUser'
+                  OrganizationName = '$(azureDevOpsArtifactOrganizationName)'
+                  ProjectName = '$(azureDevOpsArtifactProjectName)' 
+                  FeedName = '$(azureDevOpsArtifactProjectNameFeedName)'
+                  PatUser = '$env:azureDevOpsArtifactPatUser'
                 }
 
 
