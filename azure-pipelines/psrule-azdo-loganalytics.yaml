@@ -65,12 +65,12 @@ stages:
             inputs:
               targetType: filePath
               pwsh: true
-              filePath: "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1"
+              filePath: "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1 -PatUser '$(azureDevOpsArtifactPatUser)'"
               arguments: >
                 -OrganizationName '$(azureDevOpsArtifactOrganizationName)'
                 -ProjectName '$(azureDevOpsArtifactProjectName)' 
                 -FeedName '$(azureDevOpsArtifactProjectNameFeedName)'
-                -PatUser ''$(azureDevOpsArtifactPatUser)''
+
           # -PatToken '$(azureDevOpsArtifactPatToken)'
           # -CustomModules 'PSRule.Rules.AzureDevOps'
 
