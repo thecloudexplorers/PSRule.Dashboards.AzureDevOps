@@ -63,87 +63,94 @@ stages:
           - task: PowerShell@2
             displayName: "Install PSRule.Rules.AzureDevOps module"
             inputs:
-              targetType: inline
+              targetType: filePath
               pwsh: true
-              script: |
-                Write-Host "##[group]Importing PowerShell Modules"
+              filePath: $(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1
 
-                Import-Module Microsoft.PowerShell.SecretStore -Force
-                Import-Module Microsoft.PowerShell.SecretManagement  -Force
-                Import-Module Microsoft.PowerShell.PSResourceGet -Force                
+          # - task: PowerShell@2
+          #   displayName: "Install PSRule.Rules.AzureDevOps module"
+          #   inputs:
+          #     targetType: inline
+          #     pwsh: true
+          #     script: |
+          #       Write-Host "##[group]Importing PowerShell Modules"
 
-                Write-Host "##[endgroup]"
+          #       Import-Module Microsoft.PowerShell.SecretStore -Force
+          #       Import-Module Microsoft.PowerShell.SecretManagement  -Force
+          #       Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
-                # Ensure TLS 1.2 for secure connection
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          #       Write-Host "##[endgroup]"
 
-                Write-Host "##[group]Prepare variables"
-                ###########################################################################
+          #       # Ensure TLS 1.2 for secure connection
+          #       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-                $azureDevOpsArtifactOrganizationName = "$(azureDevOpsArtifactOrganizationName)"
-                $azureDevOpsArtifactProjectName = "$(azureDevOpsArtifactProjectName)"
-                $azureDevOpsArtifactProjectNameFeedName = "$(azureDevOpsArtifactProjectNameFeedName)"
+          #       Write-Host "##[group]Prepare variables"
+          #       ###########################################################################
 
-                $azureDevOpsArtifactPatUser = "$(azureDevOpsArtifactPatUser)"
-                $azureDevOpsArtifactPatToken = "$(azureDevOpsArtifactPatToken)"
+          #       $azureDevOpsArtifactOrganizationName = "$(azureDevOpsArtifactOrganizationName)"
+          #       $azureDevOpsArtifactProjectName = "$(azureDevOpsArtifactProjectName)"
+          #       $azureDevOpsArtifactProjectNameFeedName = "$(azureDevOpsArtifactProjectNameFeedName)"
 
-                # Build feed URL (NuGet v3 for PSResourceGet)
-                $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsArtifactOrganizationName/$azureDevOpsArtifactProjectName/_packaging/$azureDevOpsArtifactProjectNameFeedName/nuget/v3/index.json"
+          #       $azureDevOpsArtifactPatUser = "$(azureDevOpsArtifactPatUser)"
+          #       $azureDevOpsArtifactPatToken = "$(azureDevOpsArtifactPatToken)"
 
-                # Convert PAT to secure credential
-                $secureToken = ConvertTo-SecureString $azureDevOpsArtifactPatToken -AsPlainText -Force
-                $credentials = New-Object System.Management.Automation.PSCredential($azureDevOpsArtifactPatUser, $secureToken)
+          #       # Build feed URL (NuGet v3 for PSResourceGet)
+          #       $feedUrl = "https://pkgs.dev.azure.com/$azureDevOpsArtifactOrganizationName/$azureDevOpsArtifactProjectName/_packaging/$azureDevOpsArtifactProjectNameFeedName/nuget/v3/index.json"
 
-                Write-Host "##[endgroup]"
+          #       # Convert PAT to secure credential
+          #       $secureToken = ConvertTo-SecureString $azureDevOpsArtifactPatToken -AsPlainText -Force
+          #       $credentials = New-Object System.Management.Automation.PSCredential($azureDevOpsArtifactPatUser, $secureToken)
 
-                ###########################################################################
-                Write-Host "##[group]Set secret vault and secret store"
+          #       Write-Host "##[endgroup]"
 
-                $secretVaultName = "SecretVault"
-                if ((Get-SecretVault -Name $secretVaultName -ErrorAction SilentlyContinue)){
-                  Write-Host "Vault [$secretVaultName] already exists."  
-                  Write-Host "Removing Vault [$secretVaultName]."
-                  Unregister-SecretVault -Name $secretVaultName
-                }
+          #       ###########################################################################
+          #       Write-Host "##[group]Set secret vault and secret store"
 
-                Register-SecretVault -Name $secretVaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
-                # Set-SecretStoreConfiguration -Authentication None
+          #       $secretVaultName = "SecretVault"
+          #       if ((Get-SecretVault -Name $secretVaultName -ErrorAction SilentlyContinue)){
+          #         Write-Host "Vault [$secretVaultName] already exists."
+          #         Write-Host "Removing Vault [$secretVaultName]."
+          #         Unregister-SecretVault -Name $secretVaultName
+          #       }
 
-                $password = ConvertTo-SecureString "P@ssW0rD!" -AsPlainText -Force
-                Reset-SecretStore -Scope CurrentUser -Authentication Password -Interaction None -Password $password -PasswordTimeout -1 -Force
+          #       Register-SecretVault -Name $secretVaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
+          #       # Set-SecretStoreConfiguration -Authentication None
 
-                Unlock-SecretStore -Password $password
+          #       $password = ConvertTo-SecureString "P@ssW0rD!" -AsPlainText -Force
+          #       Reset-SecretStore -Scope CurrentUser -Authentication Password -Interaction None -Password $password -PasswordTimeout -1 -Force
 
-                Write-Host "Setting secret"
-                Set-Secret -Name "MyCredential" -Secret $credentials -Vault $secretVaultName
+          #       Unlock-SecretStore -Password $password
 
-                $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new($secretVaultName, 'MyCredential')
+          #       Write-Host "Setting secret"
+          #       Set-Secret -Name "MyCredential" -Secret $credentials -Vault $secretVaultName
 
-                Get-SecretInfo
+          #       $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new($secretVaultName, 'MyCredential')
 
-                Write-Host "##[endgroup]"
+          #       Get-SecretInfo
 
-                ###########################################################################
-                Write-Host "##[group]Set Azure Artifacts as PowerShell Repository"
+          #       Write-Host "##[endgroup]"
 
-                if ((Get-PSResourceRepository -Name "PowershellPSResourceRepository" -ErrorAction SilentlyContinue)){
-                  Write-Host "Removing existing repo PowershellPSResourceRepository"
-                  Unregister-PSResourceRepository -Name "PowershellPSResourceRepository"
-                }
+          #       ###########################################################################
+          #       Write-Host "##[group]Set Azure Artifacts as PowerShell Repository"
 
-                Write-Host "Register PSResource repository"
-                Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
+          #       if ((Get-PSResourceRepository -Name "PowershellPSResourceRepository" -ErrorAction SilentlyContinue)){
+          #         Write-Host "Removing existing repo PowershellPSResourceRepository"
+          #         Unregister-PSResourceRepository -Name "PowershellPSResourceRepository"
+          #       }
 
-                Write-Host "##[endgroup]"
+          #       Write-Host "Register PSResource repository"
+          #       Register-PSResourceRepository -Name "PowershellPSResourceRepository" -Uri $feedUrl -Trusted -CredentialInfo $CredentialInfo
 
-                #region Import custom module [PSRule.Rules.AzureDevOps]
+          #       Write-Host "##[endgroup]"
 
-                Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
+          #       #region Import custom module [PSRule.Rules.AzureDevOps]
 
-                # Installs module from private artifacts
-                Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
+          #       Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
 
-                Write-Host "##[endgroup]"
+          #       # Installs module from private artifacts
+          #       Install-PSResource "PSRule.Rules.AzureDevOps" -Repository "PowershellPSResourceRepository" -Credential $credentials
+
+          #       Write-Host "##[endgroup]"
 
           - task: PowerShell@2
             displayName: "Exporting Azure DevOps data"
