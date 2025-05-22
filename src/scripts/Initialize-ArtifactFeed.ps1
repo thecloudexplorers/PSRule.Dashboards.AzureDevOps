@@ -59,38 +59,40 @@ param(
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
     [string] $OrganizationName#,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $ProjectName,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $FeedName,
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $PatUser,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $ProjectName,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $FeedName,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string] $PatUser,
     # [Parameter(Mandatory)]
     # [ValidateNotNullOrEmpty()]
     # [string] $PatToken,
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $VaultName = 'SecretVault',
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $SecretName = 'MyCredential',
-    # [Parameter()]
-    # [ValidateNotNullOrEmpty()]
-    # [string] $RepositoryName = 'PowershellPSResourceRepository',
-    # [Parameter()]
-    # [int] $PasswordTimeout = -1,
-    # [Parameter()]
-    # [string[]] $CustomModules = @('PSRule.Rules.AzureDevOps'),
-    # [Parameter()]
-    # [string] $CustomModuleRepository = ''
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [string] $VaultName = 'SecretVault',
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [string] $SecretName = 'MyCredential',
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [string] $RepositoryName = 'PowershellPSResourceRepository',
+    [Parameter()]
+    [int] $PasswordTimeout = -1,
+    [Parameter()]
+    [string[]] $CustomModules = @('PSRule.Rules.AzureDevOps'),
+    [Parameter()]
+    [string] $CustomModuleRepository = ''
 )
 
-Write-Host "OrgName: $OrganizationName"
+
 
 Begin {
+    Write-Host "OrgName: $OrganizationName"
+
     Write-Host "##[group]Importing PowerShell Modules"
     try {
         Import-Module Microsoft.PowerShell.SecretStore     -Force -ErrorAction Stop
