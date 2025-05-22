@@ -58,7 +58,7 @@
 param(
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string] $OrganizationName#,
+    [string] $OrganizationName,
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
     [string] $ProjectName,
