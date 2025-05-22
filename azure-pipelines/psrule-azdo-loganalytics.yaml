@@ -85,9 +85,9 @@ stages:
                 Write-Host "##[group]Prepare variables"
                 ###########################################################################
 
-                $azureDevOpsArtifactOrganizationName = $(azureDevOpsArtifactOrganizationName)
-                $azureDevOpsArtifactProjectName = $(azureDevOpsArtifactProjectName)
-                $azureDevOpsArtifactProjectNameFeedName = $(azureDevOpsArtifactProjectNameFeedName)
+                $azureDevOpsArtifactOrganizationName = "$(azureDevOpsArtifactOrganizationName)"
+                $azureDevOpsArtifactProjectName = "$(azureDevOpsArtifactProjectName)"
+                $azureDevOpsArtifactProjectNameFeedName = "$(azureDevOpsArtifactProjectNameFeedName)"
 
                 $azureDevOpsArtifactPatUser = "$(azureDevOpsArtifactPatUser)"
                 $azureDevOpsArtifactPatToken = "$(azureDevOpsArtifactPatToken)"
