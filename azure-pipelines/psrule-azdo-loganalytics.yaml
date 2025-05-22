@@ -71,8 +71,9 @@ stages:
                 -ProjectName "$(azureDevOpsArtifactProjectName)" 
                 -FeedName "$(azureDevOpsArtifactProjectNameFeedName)" 
                 -PatUser "$(azureDevOpsArtifactPatUser)" 
-                # -PatToken 'dsadasd' # "$(azureDevOpsArtifactPatToken)"
                 -CustomModules "PSRule.Rules.AzureDevOps"
+
+          # -PatToken 'dsadasd' # "$(azureDevOpsArtifactPatToken)"
 
           # - task: PowerShell@2
           #   displayName: "Install PSRule.Rules.AzureDevOps module"
