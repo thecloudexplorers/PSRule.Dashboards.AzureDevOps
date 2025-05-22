@@ -74,7 +74,7 @@ stages:
                   PatToken = '$env:azureDevOpsArtifactPatUser'
                 }
 
-                . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1"
+                . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" @ArtifactFeed
             env:
               azureDevOpsArtifactOrganizationName: $(azureDevOpsArtifactOrganizationName)
               azureDevOpsArtifactProjectName: $(azureDevOpsArtifactProjectName)
