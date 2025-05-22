@@ -100,11 +100,11 @@ Begin {
     # $azureDevOpsArtifactPatUser = "$env:azureDevOpsArtifactPatUser"
     # $azureDevOpsArtifactPatToken = "$env:azureDevOpsArtifactPatToken"
 
-    $OrganizationName = $env:azureDevOpsArtifactOrganizationName
-    $ProjectName = $env:azureDevOpsArtifactProjectName
-    $FeedName = $env:azureDevOpsArtifactProjectNameFeedName
-    $PatUser = $env:azureDevOpsArtifactPatUser
-    $PatToken = $env:azureDevOpsArtifactPatToken
+    $OrganizationName = "$env:azureDevOpsArtifactOrganizationName"
+    $ProjectName = "$env:azureDevOpsArtifactProjectName"
+    $FeedName = "$env:azureDevOpsArtifactProjectNameFeedName"
+    $PatUser = "$env:azureDevOpsArtifactPatUser"
+    $PatToken = "$env:azureDevOpsArtifactPatToken"
     $VaultName = 'SecretVault'
     $SecretName = 'MyCredential'
     $RepositoryName = 'PowershellPSResourceRepository'
