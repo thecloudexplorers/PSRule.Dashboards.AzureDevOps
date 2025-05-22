@@ -54,7 +54,7 @@ param(
     [string] $PatToken,
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    $CustomModules
+    [string[]]$CustomModules
 )
 
 Begin {
@@ -74,10 +74,7 @@ Begin {
         Write-Error "Failed to import modules: $_"
         throw
     }
-    Write-Host "##[endgroup]"   
-
-        
-    
+    Write-Host "##[endgroup]"    
 }
     
 Process {
