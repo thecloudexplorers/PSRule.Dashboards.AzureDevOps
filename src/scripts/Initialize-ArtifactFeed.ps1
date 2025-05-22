@@ -22,26 +22,8 @@
 .PARAMETER PatToken
     Azure DevOps Personal Access Token (PAT) with feed-read permissions.
 
-.PARAMETER VaultName
-    Name for the SecretStore vault. Defaults to 'SecretVault'.
-
-.PARAMETER SecretName
-    Name under which to store the PSCredential. Defaults to 'MyCredential'.
-
-.PARAMETER RepositoryName
-    PSResource repository name to register. Defaults to 'PowershellPSResourceRepository'.
-
-.PARAMETER Password
-    Password to secure the SecretStore vault. Defaults to 'P@ssW0rD!'.
-
-.PARAMETER PasswordTimeout
-    Time in seconds before the vault auto-locks. Defaults to -1 (never).
-
 .PARAMETER CustomModules
     Array of module names to install after registering the repository. Defaults to @('PSRule.Rules.AzureDevOps').
-
-.PARAMETER CustomModuleRepository
-    PSResource repository from which to install custom modules. Defaults to the same as RepositoryName.
 
 .EXAMPLE
     .\Initialize-ArtifactFeed.ps1 `
@@ -76,10 +58,11 @@ param(
 )
 
 Begin {
-    $VaultName = 'SecretVault'
-    $SecretName = 'MyCredential'
-    $RepositoryName = 'PowershellPSResourceRepository'
-    $PasswordTimeout = -1
+    $vaultName = 'SecretVault'
+    $secretName = 'MyCredential'
+    $repositoryName = 'PowershellPSResourceRepository'
+    $passwordTimeout = -1
+    $password = -join ((97..122) | Get-Random -Count 10 | ForEach-Object { [char]$_ })
 
     Write-Host "##[group]Importing PowerShell Modules"
     try {
@@ -94,7 +77,7 @@ Begin {
     Write-Host "##[endgroup]"   
 
         
-    $Password = -join ((97..122) | Get-Random -Count 10 | ForEach-Object { [char]$_ })
+    
 }
     
 Process {
@@ -110,32 +93,32 @@ Process {
     Write-Host "##[endgroup]"
 
     Write-Host "##[group]Set secret vault and secret store"
-    if (Get-SecretVault -Name $VaultName -ErrorAction SilentlyContinue) {
-        Write-Host "Vault [$VaultName] exists; removing."
-        Unregister-SecretVault -Name $VaultName -ErrorAction Stop
+    if (Get-SecretVault -Name $vaultName -ErrorAction SilentlyContinue) {
+        Write-Host "Vault [$vaultName] exists; removing."
+        Unregister-SecretVault -Name $vaultName -ErrorAction Stop
     }
-    Register-SecretVault -Name $VaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault -ErrorAction Stop
-    $securePassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
+    Register-SecretVault -Name $vaultName -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault -ErrorAction Stop
+    $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
     Reset-SecretStore -Scope CurrentUser -Authentication Password -Interaction None `
-        -Password $securePassword -PasswordTimeout $PasswordTimeout -Force -ErrorAction Stop
+        -Password $securePassword -PasswordTimeout $passwordTimeout -Force -ErrorAction Stop
     Unlock-SecretStore -Password $securePassword -ErrorAction Stop
 
-    Set-Secret -Name $SecretName -Secret $credentials -Vault $VaultName -ErrorAction Stop
-    $credentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new($VaultName, $SecretName)
+    Set-Secret -Name $secretName -Secret $credentials -Vault $vaultName -ErrorAction Stop
+    $credentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new($vaultName, $secretName)
     Write-Host "##[endgroup]"
 
     Write-Host "##[group]Set Azure Artifacts as PowerShell Repository"
-    if (Get-PSResourceRepository -Name $RepositoryName -ErrorAction SilentlyContinue) {
-        Write-Host "Removing existing PSResource repo [$RepositoryName]"
-        Unregister-PSResourceRepository -Name $RepositoryName -ErrorAction Stop
+    if (Get-PSResourceRepository -Name $repositoryName -ErrorAction SilentlyContinue) {
+        Write-Host "Removing existing PSResource repo [$repositoryName]"
+        Unregister-PSResourceRepository -Name $repositoryName -ErrorAction Stop
     }
-    Register-PSResourceRepository -Name $RepositoryName -Uri $feedUrl -Trusted -CredentialInfo $credentialInfo -ErrorAction Stop
+    Register-PSResourceRepository -Name $repositoryName -Uri $feedUrl -Trusted -CredentialInfo $credentialInfo -ErrorAction Stop
     Write-Host "##[endgroup]"
 
     Write-Host "##[group]Import custom modules [$($CustomModules -join ', ')]"
     foreach ($module in $CustomModules) {
         Write-Host "Installing module [$module] from repository [$FeedName]"
-        Install-PSResource -Name $module -Repository $RepositoryName -Credential $credentials -ErrorAction Stop
+        Install-PSResource -Name $module -Repository $repositoryName -Credential $credentials -ErrorAction Stop
     }
     Write-Host "##[endgroup]"
 }
