@@ -83,73 +83,90 @@ stages:
               targetType: inline
               pwsh: true
               script: |
-                Write-Host "##[group]Importing PowerShell Modules"
-
-                Import-Module PSRule -Force
-
-                Write-Host "PSGallery modules imported."
-
-                Write-Host "##[endgroup]"
-
-                Write-Host "##[group]Prepare variables"
-                ###########################################################################
-
-                $targetAzureDevOpsOrganizationName =  "$(targetAzureDevOpsOrganizationName)"
-                $targetAzureDevOpsOrganizationID = "$(targetAzureDevOpsOrganizationID)"
-
-                $logAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"
-                $logAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
-
-                #TODO: Credential Info, should be moved to a Azure pwsh script and use persist credentials
-                $tenantId = "$(tenantId)"
-                $clientId = "$(clientId)"
-                $clientSecret = "$(clientSecret)"
-
-                $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
-
-                Write-Host "##[endgroup]"
-
-
-                Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
-
-
-                Import-Module PSRule.Rules.AzureDevOps 
-
-                Write-Host "##[endgroup]"
-
-                #endregion
-
-                #region Exporting Azure DevOps Data
-
-                Write-Host "##[group]Exporting Azure DevOps Data"                
-
-                # Generates a new bearer token for Azure DevOps API
-                Write-Host "Generates a new bearer token for Azure DevOps API"
-
-                # Azure DevOps API Scope ID - It never changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
-                $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
-
-                $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
-                    client_id     = $clientId
-                    client_secret = $clientSecret
-                    scope         = "$scopeId/.default"
-                    grant_type    = "client_credentials"
+                $ExportAzDo = @{
+                  TargetAzureDevOpsOrganizationName = "$(targetAzureDevOpsOrganizationName)"  
+                  TargetAzureDevOpsOrganizationID = "$(targetAzureDevOpsOrganizationID)"  
+                  LogAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"  
+                  LogAnalyticsSharedKey = "$(logAnalyticsSharedKey)"  
+                  TenantId = "$(tenantId)"  
+                  ClientId = "$(clientId)"  
+                  ClientSecret = "$(clientSecret)"  
+                  ReportOutputPath = "$(Build.ArtifactStagingDirectory)/export"    
                 }
-                $bearerToken = $tokenResponse.access_token
 
-                Write-Host "Connecting to Azure DevOps"
+                . "$(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1" @ExportAzDo
 
-                Connect-AzDevOps -Organization $targetAzureDevOpsOrganizationName -OrganizationId $targetAzureDevOpsOrganizationID -AccessToken $bearerToken
+          # - task: PowerShell@2
+          #   displayName: "Exporting Azure DevOps data"
+          #   inputs:
+          #     targetType: inline
+          #     pwsh: true
+          #     script: |
+          #       Write-Host "##[group]Importing PowerShell Modules"
 
-                Write-Host "Creating output directory"
-                New-Item -ItemType Directory $reportOutputPath -Force
+          #       Import-Module PSRule -Force
 
-                Write-Host "Exporting Azure DevOps Data"
-                Export-AzDevOpsOrganizationRuleData $targetAzureDevOpsOrganizationName -OrganizationId $targetAzureDevOpsOrganizationID -OutputPath $reportOutputPath
+          #       Write-Host "PSGallery modules imported."
 
-                Write-Host "##[endgroup]"
+          #       Write-Host "##[endgroup]"
 
-                #endregion
+          #       Write-Host "##[group]Prepare variables"
+          #       ###########################################################################
+
+          #       $targetAzureDevOpsOrganizationName =  "$(targetAzureDevOpsOrganizationName)"
+          #       $targetAzureDevOpsOrganizationID = "$(targetAzureDevOpsOrganizationID)"
+
+          #       $logAnalyticsWorkspaceId = "$(logAnalyticsWorkspaceId)"
+          #       $logAnalyticsSharedKey = "$(logAnalyticsSharedKey)"
+
+          #       #TODO: Credential Info, should be moved to a Azure pwsh script and use persist credentials
+          #       $tenantId = "$(tenantId)"
+          #       $clientId = "$(clientId)"
+          #       $clientSecret = "$(clientSecret)"
+
+          #       $reportOutputPath = "$(Build.ArtifactStagingDirectory)/export"
+
+          #       Write-Host "##[endgroup]"
+
+          #       Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
+
+          #       Import-Module PSRule.Rules.AzureDevOps
+
+          #       Write-Host "##[endgroup]"
+
+          #       #endregion
+
+          #       #region Exporting Azure DevOps Data
+
+          #       Write-Host "##[group]Exporting Azure DevOps Data"
+
+          #       # Generates a new bearer token for Azure DevOps API
+          #       Write-Host "Generates a new bearer token for Azure DevOps API"
+
+          #       # Azure DevOps API Scope ID - It never changes - https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
+          #       $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
+
+          #       $tokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Method Post -Body @{
+          #           client_id     = $clientId
+          #           client_secret = $clientSecret
+          #           scope         = "$scopeId/.default"
+          #           grant_type    = "client_credentials"
+          #       }
+          #       $bearerToken = $tokenResponse.access_token
+
+          #       Write-Host "Connecting to Azure DevOps"
+
+          #       Connect-AzDevOps -Organization $targetAzureDevOpsOrganizationName -OrganizationId $targetAzureDevOpsOrganizationID -AccessToken $bearerToken
+
+          #       Write-Host "Creating output directory"
+          #       New-Item -ItemType Directory $reportOutputPath -Force
+
+          #       Write-Host "Exporting Azure DevOps Data"
+          #       Export-AzDevOpsOrganizationRuleData $targetAzureDevOpsOrganizationName -OrganizationId $targetAzureDevOpsOrganizationID -OutputPath $reportOutputPath
+
+          #       Write-Host "##[endgroup]"
+
+          #       #endregion
 
           - task: PowerShell@2
             displayName: "Analyzing Azure DevOps data"
