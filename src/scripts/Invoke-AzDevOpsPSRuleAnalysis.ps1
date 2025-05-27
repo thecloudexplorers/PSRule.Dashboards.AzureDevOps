@@ -18,8 +18,14 @@
     The path where the exported JSON report files are stored.
 
     .EXAMPLE
-    Invoke-AzDevOpsPSRuleAnalysis -LogAnalyticsWorkspaceId 'xxxxx' -LogAnalyticsSharedKey 'yyyyy' -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
-    #>
+    $psRuleAnalysisParams = @{
+        LogAnalyticsWorkspaceId = 'xxxxx'
+        LogAnalyticsSharedKey   = 'yyyyy'
+        ReportOutputPath        = '$(Build.ArtifactStagingDirectory)/export'
+    }
+
+    Invoke-AzDevOpsPSRuleAnalysis @psRuleAnalysisParams
+#>
 
 [CmdletBinding()]
 param (
@@ -55,12 +61,12 @@ process {
 
     # Variables are already passed in from pipeline or task
     Write-Verbose "WorkspaceId and SharedKey retrieved from pipeline variables."
-    Write-Verbose "Report output path is '$ReportOutputPath'."
+    Write-Verbose "Report output path is [$ReportOutputPath]."
 
     Write-Host "##[endgroup]"
 
     #region Analyze Azure DevOps Data
-    Write-Host "##[group]Analysing Azure DevOps Data"
+    Write-Host "##[group]Analyzing Azure DevOps Data"
 
     # Enable TLS 1.2
     Write-Verbose "Enforcing TLS 1.2 for secure connections."

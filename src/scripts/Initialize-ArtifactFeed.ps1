@@ -27,14 +27,17 @@
     Array of module names to install after registering the repository.
 
 .EXAMPLE
-    .\Initialize-ArtifactFeed.ps1 `
-      -OrganizationName Contoso `
-      -ProjectName WebApp `
-      -FeedName Modules `
-      -PatUser build `
-      -PatToken abc123 `
-      -CustomModules 'PSRule.Rules.AzureDevOps','Another.Module' `
-      -Verbose
+    $initFeedParams = @{
+        OrganizationName = 'Contoso'
+        ProjectName      = 'WebApp'
+        FeedName         = 'Modules'
+        PatUser          = 'build'
+        PatToken         = 'abc123'
+        CustomModules    = @('PSRule.Rules.AzureDevOps', 'Another.Module')
+        Verbose          = $true
+    }
+
+    .\Initialize-ArtifactFeed.ps1 @initFeedParams
 #>
 [CmdletBinding()]
 param(
@@ -126,7 +129,10 @@ Process {
     Reset-SecretStore @resetParams
 
     # Unlock the vault
-    $unlockParams = @{ Password = $resetParams.Password; ErrorAction = 'Stop' }
+    $unlockParams = @{ 
+        Password    = $resetParams.Password; 
+        ErrorAction = 'Stop' 
+    }
     Unlock-SecretStore @unlockParams
 
     # Store the PSCredential in the vault

@@ -1,23 +1,20 @@
 name: PSRule-ADO
 
-pool: MSHosted-WorkloadsPool
-
 variables:
   # Set to your variable group containing variables
   - group: azdo-psrule-run
   - name: reportOutputPath
     value: "$(Build.ArtifactStagingDirectory)/export"
 
-# schedules:
-#   - cron: "0 6 * * *"
-#     displayName: Run every day at 6am
-#     branches:
-#       include:
-#         - "*"
+pool:
+  vmImage: "ubuntu-latest"
 
-trigger:
-  - main
-  - users/wcamargo/*
+schedules:
+  - cron: "0 6 * * *"
+    displayName: Run every day at 6am
+    branches:
+      include:
+        - main
 
 stages:
   - stage: Run
@@ -63,6 +60,7 @@ stages:
           - task: PowerShell@2
             displayName: "Install PSGallery Powershell Modules Inline"
             inputs:
+              # Inline call to the script is being used as is is not possible to escape the '@' in PatUser variable via script
               targetType: inline
               pwsh: true
               script: |

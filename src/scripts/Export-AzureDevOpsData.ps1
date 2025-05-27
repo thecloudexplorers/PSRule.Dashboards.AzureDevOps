@@ -1,76 +1,84 @@
 
 <#
 .SYNOPSIS
-Exports Azure DevOps data to a specified output path.
+    Exports Azure DevOps data to a specified output path.
 
 .DESCRIPTION
-This function imports necessary modules, prepares variables, generates a bearer token for Azure DevOps API, 
-connects to Azure DevOps, and exports organization rule data to a specified output path.
+    This function imports necessary modules, prepares variables, generates a bearer token for Azure DevOps API, 
+    connects to Azure DevOps, and exports organization rule data to a specified output path.
 
 .PARAMETER TargetAzureDevOpsOrganizationName
-The name of the target Azure DevOps organization.
+    The name of the target Azure DevOps organization.
 
 .PARAMETER TargetAzureDevOpsOrganizationID
-The ID of the target Azure DevOps organization.
+    The ID of the target Azure DevOps organization.
 
 .PARAMETER LogAnalyticsWorkspaceId
-The ID of the Log Analytics workspace.
+    The ID of the Log Analytics workspace.
 
 .PARAMETER LogAnalyticsSharedKey
-The shared key for the Log Analytics workspace.
+    The shared key for the Log Analytics workspace.
 
 .PARAMETER TenantId
-The tenant ID for Azure authentication.
+    The tenant ID for Azure authentication.
 
 .PARAMETER ClientId
-The client ID for Azure authentication.
+    The client ID for Azure authentication.
 
 .PARAMETER ClientSecret
-The client secret for Azure authentication.
+    The client secret for Azure authentication.
 
 .PARAMETER ReportOutputPath
-The path where the exported data will be saved.
+    The path where the exported data will be saved.
 
 .EXAMPLE
-Export-AzDevOpsData -TargetAzureDevOpsOrganizationName "MyOrg" -TargetAzureDevOpsOrganizationID "12345" `
-                    -LogAnalyticsWorkspaceId "workspaceId" -LogAnalyticsSharedKey "sharedKey" `
-                    -TenantId "tenantId" -ClientId "clientId" -ClientSecret "clientSecret" `
-                    -ReportOutputPath "C:\path\to\output"
+    $exportParams = @{
+        TargetAzureDevOpsOrganizationName = "MyOrg"
+        TargetAzureDevOpsOrganizationID   = "12345"
+        LogAnalyticsWorkspaceId           = "workspaceId"
+        LogAnalyticsSharedKey             = "sharedKey"
+        TenantId                          = "tenantId"
+        ClientId                          = "clientId"
+        ClientSecret                      = "clientSecret"
+        ReportOutputPath                  = "C:\path\to\output"
+    }
+
+    Export-AzDevOpsData @exportParams
 #>
 
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$TargetAzureDevOpsOrganizationName,
+    [System.String]$TargetAzureDevOpsOrganizationName,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$TargetAzureDevOpsOrganizationID,
+    [System.String]$TargetAzureDevOpsOrganizationID,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$LogAnalyticsWorkspaceId,
+    [System.String]$LogAnalyticsWorkspaceId,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$LogAnalyticsSharedKey,
+    [System.String]$LogAnalyticsSharedKey,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$TenantId,
+    [System.String]$TenantId,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$ClientId,
+    [System.String]$ClientId,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$ClientSecret,
+    [System.String]$ClientSecret,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [string]$ReportOutputPath
+    [System.String]$ReportOutputPath
 )
 
 begin {
@@ -88,8 +96,8 @@ begin {
 
     Write-Host "##[group]Prepare variables"
         
-    # Static defaults declared in Begin
-    $scopeId = "499b84ac-1321-427f-aa17-267ca6975798" # Azure DevOps API Scope ID - It never changes
+    # Azure DevOps API Scope ID - It never changes
+    $scopeId = "499b84ac-1321-427f-aa17-267ca6975798" 
 
     Write-Host "##[endgroup]"
 
@@ -126,7 +134,13 @@ process {
 
     Write-Host "Connecting to Azure DevOps"
         
-    Connect-AzDevOps -Organization $TargetAzureDevOpsOrganizationName -OrganizationId $TargetAzureDevOpsOrganizationID -AccessToken $bearerToken
+    $connectAzDevOpsParams = @{
+        Organization   = $TargetAzureDevOpsOrganizationName
+        OrganizationId = $TargetAzureDevOpsOrganizationID
+        AccessToken    = $bearerToken
+    }
+
+    Connect-AzDevOps @connectAzDevOpsParams
 
     Write-Host "Creating output directory"
         
@@ -134,8 +148,14 @@ process {
 
     Write-Host "Exporting Azure DevOps Data"
         
-    Export-AzDevOpsOrganizationRuleData -Organization $TargetAzureDevOpsOrganizationName -OrganizationId $TargetAzureDevOpsOrganizationID -OutputPath $ReportOutputPath
+    $exportOrgRuleParams = @{
+        Organization   = $TargetAzureDevOpsOrganizationName
+        OrganizationId = $TargetAzureDevOpsOrganizationID
+        OutputPath     = $ReportOutputPath
+    }
 
+    Export-AzDevOpsOrganizationRuleData @exportOrgRuleParams
+    
     Write-Host "##[endgroup]"
 }
 
