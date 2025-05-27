@@ -74,9 +74,9 @@ Begin {
     $passwordTimeout = -1
 
     # Generate a random lowercase password of length 10
-    $password = -join (
-        (97..122) | Get-Random -Count 10 | ForEach-Object { [char]$_ }
-    )
+    # Justified: secret is only available in memory via runtime injection
+    $password = -join ( (97..122) | Get-Random -Count 10 | ForEach-Object { [char]$_ } ) |
+    ConvertTo-SecureString -AsPlainText -Force
 
     Write-Host "##[group]Importing PowerShell Modules"
     try {
@@ -89,7 +89,7 @@ Begin {
         Write-Error "Failed to import modules: $_"
         throw
     }
-    Write-Host "##[endgroup]"
+    Write-Output "##[endgroup]"
 }
 
 Process {
@@ -102,7 +102,8 @@ Process {
     $feedUrl = "https://pkgs.dev.azure.com/$OrganizationName/$ProjectName/_packaging/$FeedName/nuget/v3/index.json"
 
     # Convert PAT to secure PSCredential
-    $secureToken = ConvertTo-SecureString -String $PatToken -AsPlainText -Force
+    # Justified: secret is only available in memory via runtime injection
+    $secureToken = $PatToken | ConvertTo-SecureString -AsPlainText -Force
     $credentials = New-Object System.Management.Automation.PSCredential($PatUser, $secureToken)
     Write-Host "##[endgroup]"
 
@@ -121,7 +122,7 @@ Process {
         Scope           = 'CurrentUser'
         Authentication  = 'Password'
         Interaction     = 'None'
-        Password        = (ConvertTo-SecureString -String $password -AsPlainText -Force)
+        Password        = $password
         PasswordTimeout = $passwordTimeout
         Force           = $true
         ErrorAction     = 'Stop'
@@ -129,10 +130,11 @@ Process {
     Reset-SecretStore @resetParams
 
     # Unlock the vault
-    $unlockParams = @{ 
-        Password    = $resetParams.Password; 
-        ErrorAction = 'Stop' 
+    $unlockParams = @{
+        Password    = $resetParams.Password;
+        ErrorAction = 'Stop'
     }
+
     Unlock-SecretStore @unlockParams
 
     # Store the PSCredential in the vault
@@ -157,6 +159,7 @@ Process {
         ErrorAction    = 'Stop'
     }
     Register-PSResourceRepository @repoParams
+
     Write-Host "##[endgroup]"
 
     Write-Host "##[group]Import custom modules [$($CustomModules -join ', ')]"

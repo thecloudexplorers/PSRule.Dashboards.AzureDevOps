@@ -4,7 +4,7 @@
     Exports Azure DevOps data to a specified output path.
 
 .DESCRIPTION
-    This function imports necessary modules, prepares variables, generates a bearer token for Azure DevOps API, 
+    This function imports necessary modules, prepares variables, generates a bearer token for Azure DevOps API,
     connects to Azure DevOps, and exports organization rule data to a specified output path.
 
 .PARAMETER TargetAzureDevOpsOrganizationName
@@ -83,7 +83,7 @@ param (
 
 begin {
     Write-Host "##[group]Importing PowerShell Modules"
-        
+
     try {
         Import-Module -Name PSRule -Force -ErrorAction Stop
         Write-Host "PSGallery modules imported."
@@ -95,14 +95,14 @@ begin {
     Write-Host "##[endgroup]"
 
     Write-Host "##[group]Prepare variables"
-        
+
     # Azure DevOps API Scope ID - It never changes
-    $scopeId = "499b84ac-1321-427f-aa17-267ca6975798" 
+    $scopeId = "499b84ac-1321-427f-aa17-267ca6975798"
 
     Write-Host "##[endgroup]"
 
     Write-Host "##[group]Import custom module [PSRule.Rules.AzureDevOps]"
-        
+
     try {
         Import-Module -Name PSRule.Rules.AzureDevOps -ErrorAction Stop
     }
@@ -115,9 +115,9 @@ begin {
 
 process {
     Write-Host "##[group]Exporting Azure DevOps Data"
-        
+
     Write-Host "Generates a new bearer token for Azure DevOps API"
-        
+
     $params = @{
         Uri    = "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token"
         Method = 'Post'
@@ -128,12 +128,12 @@ process {
             grant_type    = 'client_credentials'
         }
     }
-        
+
     $tokenResponse = Invoke-RestMethod @params
     $bearerToken = $tokenResponse.access_token
 
     Write-Host "Connecting to Azure DevOps"
-        
+
     $connectAzDevOpsParams = @{
         Organization   = $TargetAzureDevOpsOrganizationName
         OrganizationId = $TargetAzureDevOpsOrganizationID
@@ -143,11 +143,11 @@ process {
     Connect-AzDevOps @connectAzDevOpsParams
 
     Write-Host "Creating output directory"
-        
+
     New-Item -ItemType Directory -Path $ReportOutputPath -Force
 
     Write-Host "Exporting Azure DevOps Data"
-        
+
     $exportOrgRuleParams = @{
         Organization   = $TargetAzureDevOpsOrganizationName
         OrganizationId = $TargetAzureDevOpsOrganizationID
@@ -155,7 +155,7 @@ process {
     }
 
     Export-AzDevOpsOrganizationRuleData @exportOrgRuleParams
-    
+
     Write-Host "##[endgroup]"
 }
 

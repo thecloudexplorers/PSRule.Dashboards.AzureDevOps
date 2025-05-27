@@ -5,7 +5,7 @@
 
     .DESCRIPTION
     This function loads required PSRule modules, prepares necessary variables, analyzes
-    exported Azure DevOps JSON reports using PSRule rules, and sends the evaluation results 
+    exported Azure DevOps JSON reports using PSRule rules, and sends the evaluation results
     to Azure Log Analytics.
 
     .PARAMETER LogAnalyticsWorkspaceId
@@ -74,8 +74,8 @@ process {
 
     # Get all directories with JSON files
     $jsonFilesGlob = Get-ChildItem -Path $ReportOutputPath -File -Recurse |
-    Select-Object -ExpandProperty DirectoryName -Unique |
-    ForEach-Object { Join-Path -Path $_ -ChildPath '*.json' }
+        Select-Object -ExpandProperty DirectoryName -Unique |
+        ForEach-Object { Join-Path -Path $_ -ChildPath '*.json' }
 
     # Run PSRule assertions silently (no output)
     $assertParams = @{
