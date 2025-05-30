@@ -21,7 +21,7 @@ param secrets = [
   { name: 'azureDevOpsArtifactPatUser', value: '' }
   { name: 'targetAzureDevOpsOrganizationID', value: '' }
   { name: 'targetAzureDevOpsOrganizationName', value: '' }
-  { name: 'psrule-rules-azuredevops-apikey', value: '' }
+  { name: 'psruleRulesAzureDevopsApikey', value: '' }
   { name: 'targetAzureDevOpsSpnClientId', value: '' }
   { name: 'targetAzureDevOpsSpnClientSecret', value: '' }
   { name: 'targetAzureDevOpsSpnTenantId', value: '' }
