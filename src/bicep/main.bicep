@@ -1,20 +1,30 @@
 targetScope = 'resourceGroup'
 
-@description('Azure DevOps Organization')
-param azDoOrganization string
-
-@description('Azure DevOps Personal Access Token')
-@secure()
-param azDoPAT string
-
 @description('Log Analytics Workspace Name')
-param logAnalyticsWorkspace_Name string = 'log-azdo-${uniqueString(subscription().subscriptionId, resourceGroup().id)}'
+param logAnalyticsWorkspace_Name string
 
 @description('Key Vault Name')
-param keyVault_Name string = 'kv-azdo-${uniqueString(subscription().subscriptionId, resourceGroup().id)}'
+param keyVault_Name string
 
 @description('Location for all resources')
 param location string = resourceGroup().location
+
+@description('List of Key Vault secrets to create.\nEach object must have a `name` (string) and a `value` (string).\nValues may be empty strings.')
+param secrets array = [
+  { name: 'azureDevOpsOrganizationId', value: '' }
+  { name: 'azureDevOpsOrganizationName', value: '' }
+  { name: 'azureDevOpsArtifactOrganizationName', value: '' }
+  { name: 'azureDevOpsArtifactProjectName', value: '' }
+  { name: 'azureDevOpsArtifactProjectNameFeedName', value: '' }
+  { name: 'azureDevOpsArtifactPatToken', value: '' }
+  { name: 'azureDevOpsArtifactPatUser', value: '' }
+  { name: 'targetAzureDevOpsOrganizationID', value: '' }
+  { name: 'targetAzureDevOpsOrganizationName', value: '' }
+  { name: 'psruleRulesAzureDevopsApikey', value: '' }
+  { name: 'targetAzureDevOpsSpnClientId', value: '' }
+  { name: 'targetAzureDevOpsSpnClientSecret', value: '' }
+  { name: 'targetAzureDevOpsSpnTenantId', value: '' }
+]
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' = {
   name: logAnalyticsWorkspace_Name
@@ -50,6 +60,17 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
+// Create each secret dynamically from the `secrets` array
+resource secretResources 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = [
+  for secret in secrets: {
+    parent: keyVault
+    name: secret.name
+    properties: {
+      value: secret.value
+    }
+  }
+]
+
 resource secretWorkspaceId 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'logAnalyticsWorkspaceId'
@@ -63,22 +84,6 @@ resource secretWorkspaceSharedKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
   name: 'logAnalyticsSharedKey'
   properties: {
     value: logAnalyticsWorkspace.listKeys().primarySharedKey
-  }
-}
-
-resource secretAzDoPAT 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'AZDO-PAT'
-  properties: {
-    value: azDoPAT
-  }
-}
-
-resource secretAzDoOrganization 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'AZDO-ORGANIZATION'
-  properties: {
-    value: azDoOrganization
   }
 }
 
