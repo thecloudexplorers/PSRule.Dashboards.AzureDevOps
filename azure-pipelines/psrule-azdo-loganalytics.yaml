@@ -89,9 +89,9 @@ stages:
                 -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
                 -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
-              # -TenantId '$(targetAzureDevOpsSpnTenantId)'
-              # -ClientId '$(targetAzureDevOpsSpnClientId)'
-              # -ClientSecret '$(targetAzureDevOpsSpnClientSecret)'
+                -TenantId '$(tenantId)'
+                -ClientId '$(servicePrincipalId)'
+                -ClientSecret '$(servicePrincipalKey)'
 
           - task: PowerShell@2
             displayName: "Run PSRule Analysis"

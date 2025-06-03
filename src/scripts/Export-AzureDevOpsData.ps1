@@ -56,17 +56,17 @@ param (
     [ValidateNotNullOrEmpty()]
     [System.String]$TargetAzureDevOpsOrganizationID,
 
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    [System.String]$TenantId = $env:tenantId,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [System.String]$TenantId,
 
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    [System.String]$ClientId = $env:servicePrincipalId,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [System.String]$ClientId,
 
-    # [Parameter(Mandatory)]
-    # [ValidateNotNullOrEmpty()]
-    [System.String]$ClientSecret = $env:servicePrincipalKey,
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [System.String]$ClientSecret,
 
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
