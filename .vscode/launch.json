@@ -5,12 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "PowerShell: Launch Script",
+      "name": "PowerShell: Deploy Dashboards",
       "type": "PowerShell",
       "request": "launch",
-      "script": "${workspaceFolder}/src/scripts/deploy-dashboards.ps1",
+      "script": "${workspaceFolder}/src/scripts/Bootstrap-PSRuleDashboards.ps1",
       "cwd": "${workspaceFolder}",
-      "args": ["-RootDirectory", "${workspaceFolder}"]
+      "args": [
+        "-RootDirectory",
+        "${workspaceFolder}"
+      ]
     }
   ]
 }

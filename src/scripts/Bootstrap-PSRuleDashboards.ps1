@@ -16,10 +16,17 @@ param (
     # Path to the root directory containing Bicep templates and parameters
     [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
-    [System.String] $RootDirectory
+    [System.String] $RootDirectory,
+    # ResourceGroupName
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [System.String] $ResourceGroupName = $env:RESOURCE_GROUP_NAME,
+    # Location for the resource group and resources
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [ValidateNotNullOrEmpty()]
+    [System.String] $Location = $env:RESOURCE_GROUP_LOCATION
 )
 Begin {
-    # Fail fast on any error
+    # Fail fast on any location
     $ErrorActionPreference = 'Stop'
 
     # Azure module import
@@ -34,8 +41,8 @@ Begin {
 
     # Static defaults
     Write-Verbose "##[group] Prepare variables"
-    $Location = 'westeurope'    # Azure deployment location
-    $ResourceGroupName = 'lzca-p-dash-rg001'  # Target resource group name
+
+
     Write-Verbose "##[endgroup]"
 }
 Process {
