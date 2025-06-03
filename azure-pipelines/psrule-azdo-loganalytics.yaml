@@ -76,6 +76,7 @@ stages:
                 . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" @ArtifactFeed
 
           - task: AzureCLI@2
+            displayName: "Export Azure DevOps Data"
             inputs:
               azureSubscription: $(serviceConnectionName)
               scriptType: "pscore"
@@ -87,24 +88,10 @@ stages:
               arguments: >
                 -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
                 -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
-                -TenantId '$(targetAzureDevOpsSpnTenantId)'
-                -ClientId '$(targetAzureDevOpsSpnClientId)'
-                -ClientSecret '$(targetAzureDevOpsSpnClientSecret)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
-
-          # - task: PowerShell@2
-          #   displayName: "Exporting Azure DevOps data"
-          #   inputs:
-          #     filePath: $(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1
-          #     pwsh: true
-          #     arguments:
-          #       >
-          #       -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
-          #       -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
-          #       -TenantId '$(targetAzureDevOpsSpnTenantId)'
-          #       -ClientId '$(targetAzureDevOpsSpnClientId)'
-          #       -ClientSecret '$(targetAzureDevOpsSpnClientSecret)'
-          #       -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
+              # -TenantId '$(targetAzureDevOpsSpnTenantId)'
+              # -ClientId '$(targetAzureDevOpsSpnClientId)'
+              # -ClientSecret '$(targetAzureDevOpsSpnClientSecret)'
 
           - task: PowerShell@2
             displayName: "Run PSRule Analysis"
