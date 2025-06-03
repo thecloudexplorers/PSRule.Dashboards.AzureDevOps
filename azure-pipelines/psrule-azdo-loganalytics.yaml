@@ -75,20 +75,36 @@ stages:
 
                 . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" @ArtifactFeed
 
-          - task: PowerShell@2
-            displayName: "Exporting Azure DevOps data"
+          - task: AzureCLI@2
             inputs:
-              filePath: $(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1
-              pwsh: true
+              azureSubscription: $(serviceConnectionName)
+              scriptType: "pscore"
+              scriptLocation: "scriptPath"
+              scriptPath: $(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1
+              powerShellErrorActionPreference: "stop"
+              addSpnToEnvironment: true
+              visibleAzLogin: true
               arguments: >
                 -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
                 -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
-                -LogAnalyticsWorkspaceId '$(logAnalyticsWorkspaceId)'
-                -LogAnalyticsSharedKey '$(logAnalyticsSharedKey)'
                 -TenantId '$(targetAzureDevOpsSpnTenantId)'
                 -ClientId '$(targetAzureDevOpsSpnClientId)'
                 -ClientSecret '$(targetAzureDevOpsSpnClientSecret)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
+
+          # - task: PowerShell@2
+          #   displayName: "Exporting Azure DevOps data"
+          #   inputs:
+          #     filePath: $(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1
+          #     pwsh: true
+          #     arguments:
+          #       >
+          #       -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
+          #       -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
+          #       -TenantId '$(targetAzureDevOpsSpnTenantId)'
+          #       -ClientId '$(targetAzureDevOpsSpnClientId)'
+          #       -ClientSecret '$(targetAzureDevOpsSpnClientSecret)'
+          #       -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
 
           - task: PowerShell@2
             displayName: "Run PSRule Analysis"

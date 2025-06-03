@@ -58,23 +58,15 @@ param (
 
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [System.String]$LogAnalyticsWorkspaceId,
+    [System.String]$TenantId = $env:tenantId,
 
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [System.String]$LogAnalyticsSharedKey,
+    [System.String]$ClientId = $env:servicePrincipalId,
 
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [System.String]$TenantId,
-
-    [Parameter(Mandatory)]
-    [ValidateNotNullOrEmpty()]
-    [System.String]$ClientId,
-
-    [Parameter(Mandatory)]
-    [ValidateNotNullOrEmpty()]
-    [System.String]$ClientSecret,
+    [System.String]$ClientSecret = $env:servicePrincipalKey,
 
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
