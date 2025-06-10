@@ -100,6 +100,7 @@ module workbookAzDoMain 'modules/azdo-main.bicep' = {
 module workbookAzDoResourceByRule 'modules/azdo-resources-by-rule.bicep' = {
   name: 'workbookAzDoResourceByRule'
   params: {
+    workbook_AzureDevOpsResourceByRule_Name: 'workbookAzDoResourceByRule'
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
   }
@@ -108,6 +109,7 @@ module workbookAzDoResourceByRule 'modules/azdo-resources-by-rule.bicep' = {
 module workbookAzDoRuleHitsByResource 'modules/azdo-rule-hits-by-resource.bicep' = {
   name: 'workbookAzDoRuleHitsByResource'
   params: {
+    workbook_AzureDevOpsRuleHitsByResource_Name: 'workbookAzDoRuleHitsByResource'
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
   }
@@ -116,6 +118,7 @@ module workbookAzDoRuleHitsByResource 'modules/azdo-rule-hits-by-resource.bicep'
 module workbookAzDoSummaryByRule 'modules/azdo-summary-by-rule.bicep' = {
   name: 'workbookAzDoSummaryByRule'
   params: {
+    workbook_AzureDevOpsSummaryByRule_Name: 'workbookAzDoSummaryByRule'
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
     AzDoResourcesByRuleId: workbookAzDoResourceByRule.outputs.id
@@ -125,6 +128,7 @@ module workbookAzDoSummaryByRule 'modules/azdo-summary-by-rule.bicep' = {
 module workbookAzDoResourceState 'modules/azdo-resource-state.bicep' = {
   name: 'workbookAzDoResourceState'
   params: {
+    workbook_AzureDevOpsResourceState_Name: 'workbookAzDoResourceState'
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
     AzDoRuleHitsByResourceId: workbookAzDoRuleHitsByResource.outputs.id
