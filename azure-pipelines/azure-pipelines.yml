@@ -89,9 +89,12 @@ stages:
                 -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
                 -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
-              # -TenantId '$(tenantId)'
-              # -ClientId '$(servicePrincipalId)'
-              # -ClientSecret '$(servicePrincipalKey)'
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publishing PSRule Analysis
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/export
+              artifactName: AzureDevOpsData
 
           - task: PowerShell@2
             displayName: "Run PSRule Analysis"
@@ -102,9 +105,3 @@ stages:
                 -LogAnalyticsWorkspaceId '$(logAnalyticsWorkspaceId)'
                 -LogAnalyticsSharedKey '$(logAnalyticsSharedKey)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
-
-          - task: PublishPipelineArtifact@1
-            displayName: Publishing PSRule Analysis
-            inputs:
-              targetPath: $(Build.ArtifactStagingDirectory)/export
-              artifactName: AzureDevOpsData

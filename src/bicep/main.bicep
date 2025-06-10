@@ -90,6 +90,7 @@ resource secretWorkspaceSharedKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
 module workbookAzDoMain 'modules/azdo-main.bicep' = {
   name: 'workbookAzDoMain'
   params: {
+    workbook_AzureDevOpsMain_Name: guid('wb-azdo-main', resourceGroup().id)
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
     AzDoResourceStateId: workbookAzDoResourceState.outputs.id
@@ -100,7 +101,7 @@ module workbookAzDoMain 'modules/azdo-main.bicep' = {
 module workbookAzDoResourceByRule 'modules/azdo-resources-by-rule.bicep' = {
   name: 'workbookAzDoResourceByRule'
   params: {
-    workbook_AzureDevOpsResourceByRule_Name: 'workbookAzDoResourceByRule'
+    workbook_AzureDevOpsResourceByRule_Name: guid('wb-azdo-resources-byrule', resourceGroup().id)
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
   }
@@ -109,7 +110,7 @@ module workbookAzDoResourceByRule 'modules/azdo-resources-by-rule.bicep' = {
 module workbookAzDoRuleHitsByResource 'modules/azdo-rule-hits-by-resource.bicep' = {
   name: 'workbookAzDoRuleHitsByResource'
   params: {
-    workbook_AzureDevOpsRuleHitsByResource_Name: 'workbookAzDoRuleHitsByResource'
+    workbook_AzureDevOpsRuleHitsByResource_Name: guid('wb-azdo-rulehits-byresource', resourceGroup().id)
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
   }
@@ -118,7 +119,7 @@ module workbookAzDoRuleHitsByResource 'modules/azdo-rule-hits-by-resource.bicep'
 module workbookAzDoSummaryByRule 'modules/azdo-summary-by-rule.bicep' = {
   name: 'workbookAzDoSummaryByRule'
   params: {
-    workbook_AzureDevOpsSummaryByRule_Name: 'workbookAzDoSummaryByRule'
+    workbook_AzureDevOpsSummaryByRule_Name: guid('wb-azdo-summary-byrule', resourceGroup().id)
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
     AzDoResourcesByRuleId: workbookAzDoResourceByRule.outputs.id
@@ -128,7 +129,7 @@ module workbookAzDoSummaryByRule 'modules/azdo-summary-by-rule.bicep' = {
 module workbookAzDoResourceState 'modules/azdo-resource-state.bicep' = {
   name: 'workbookAzDoResourceState'
   params: {
-    workbook_AzureDevOpsResourceState_Name: 'workbookAzDoResourceState'
+    workbook_AzureDevOpsResourceState_Name: guid('wb-azdo-resource-state', resourceGroup().id)
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     location: location
     AzDoRuleHitsByResourceId: workbookAzDoRuleHitsByResource.outputs.id
