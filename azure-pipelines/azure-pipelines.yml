@@ -97,7 +97,6 @@ stages:
                 -LogAnalyticsWorkspaceId '$(logAnalyticsWorkspaceId)'
                 -LogAnalyticsSharedKey '$(logAnalyticsSharedKey)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
-                -OutputFormats @('LogAnalytics', 'Csv', 'Markdown', 'Json')
 
           - task: PublishPipelineArtifact@1
             displayName: "Publish PSRule Results - Raw Data"
