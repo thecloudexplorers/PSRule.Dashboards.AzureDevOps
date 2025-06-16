@@ -88,15 +88,7 @@ stages:
               arguments: >
                 -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
                 -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
-                -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
-
-          - task: PublishPipelineArtifact@1
-            displayName: Publishing PSRule Analysis
-            inputs:
-              targetPath: $(Build.ArtifactStagingDirectory)/export
-              artifactName: AzureDevOpsData
-
-          - task: PowerShell@2
+                -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'          - task: PowerShell@2
             displayName: "Run PSRule Analysis"
             inputs:
               filePath: $(Pipeline.Workspace)/s/src/scripts/Invoke-AzDevOpsPSRuleAnalysis.ps1
@@ -105,3 +97,19 @@ stages:
                 -LogAnalyticsWorkspaceId '$(logAnalyticsWorkspaceId)'
                 -LogAnalyticsSharedKey '$(logAnalyticsSharedKey)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
+                -OutputFormats @('LogAnalytics', 'Csv', 'Markdown', 'Json')
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish PSRule Results - Raw Data"
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/export
+              artifactName: AzureDevOpsRawData
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish PSRule Results - Analysis Reports"
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/export
+              artifactName: PSRuleAnalysisReports
+              artifactType: pipeline
+            condition: and(succeededOrFailed(), eq(variables['Agent.JobStatus'], 'Succeeded'))
