@@ -88,7 +88,9 @@ stages:
               arguments: >
                 -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
                 -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
-                -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'          - task: PowerShell@2
+                -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
+
+          - task: PowerShell@2
             displayName: "Run PSRule Analysis"
             inputs:
               filePath: $(Pipeline.Workspace)/s/src/scripts/Invoke-AzDevOpsPSRuleAnalysis.ps1
