@@ -1,0 +1,16 @@
+/tools/private/*.ps1
+tests/out*
+coverage.xml
+myenv.ps1
+.report/
+.local/
+
+
+# VS Code files for those working on multiple tools
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/PSScriptAnalyzerSettings.psd1
+*.code-workspace

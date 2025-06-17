@@ -2,7 +2,7 @@ name: PSRule-ADO
 
 variables:
   # Set to your variable group containing variables
-  - group: azdo-psrule-run
+  - group: devops-assessment-vg001
   - name: reportOutputPath
     value: "$(Build.ArtifactStagingDirectory)/export"
 
@@ -75,19 +75,19 @@ stages:
 
                 . "$(Pipeline.Workspace)/s/src/scripts/Initialize-ArtifactFeed.ps1" @ArtifactFeed
 
-          - task: PowerShell@2
-            displayName: "Exporting Azure DevOps data"
+          - task: AzureCLI@2
+            displayName: "Export Azure DevOps Data"
             inputs:
-              filePath: $(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1
-              pwsh: true
+              azureSubscription: $(serviceConnectionName)
+              scriptType: "pscore"
+              scriptLocation: "scriptPath"
+              scriptPath: $(Pipeline.Workspace)/s/src/scripts/Export-AzureDevOpsData.ps1
+              powerShellErrorActionPreference: "stop"
+              addSpnToEnvironment: true
+              visibleAzLogin: true
               arguments: >
                 -TargetAzureDevOpsOrganizationName '$(targetAzureDevOpsOrganizationName)'
                 -TargetAzureDevOpsOrganizationID '$(targetAzureDevOpsOrganizationID)'
-                -LogAnalyticsWorkspaceId '$(logAnalyticsWorkspaceId)'
-                -LogAnalyticsSharedKey '$(logAnalyticsSharedKey)'
-                -TenantId '$(targetAzureDevOpsSpnTenantId)'
-                -ClientId '$(targetAzureDevOpsSpnClientId)'
-                -ClientSecret '$(targetAzureDevOpsSpnClientSecret)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
 
           - task: PowerShell@2
@@ -101,7 +101,16 @@ stages:
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
 
           - task: PublishPipelineArtifact@1
-            displayName: Publishing PSRule Analysis
+            displayName: "Publish PSRule Results - Raw Data"
             inputs:
               targetPath: $(Build.ArtifactStagingDirectory)/export
-              artifactName: AzureDevOpsData
+              artifactName: AzureDevOpsRawData
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish PSRule Results - Analysis Reports"
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/export
+              artifactName: PSRuleAnalysisReports
+              artifactType: pipeline
+            condition: and(succeededOrFailed(), eq(variables['Agent.JobStatus'], 'Succeeded'))
