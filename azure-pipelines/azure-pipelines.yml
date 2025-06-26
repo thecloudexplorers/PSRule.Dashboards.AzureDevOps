@@ -1,4 +1,4 @@
-name: PSRule-ADO
+name: PSRule.Dashboards.AzureDevOps
 
 variables:
   # Set to your variable group containing variables
