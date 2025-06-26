@@ -99,18 +99,19 @@ stages:
                 -LogAnalyticsWorkspaceId '$(logAnalyticsWorkspaceId)'
                 -LogAnalyticsSharedKey '$(logAnalyticsSharedKey)'
                 -ReportOutputPath '$(Build.ArtifactStagingDirectory)/export'
+                -AnalysisOutputPath '$(Build.ArtifactStagingDirectory)/analysis'
 
-          # - task: PublishPipelineArtifact@1
-          #   displayName: "Publish PSRule Results - Raw Data"
-          #   inputs:
-          #     targetPath: $(Build.ArtifactStagingDirectory)/export
-          #     artifactName: AzureDevOpsRawData
-          #   condition: succeededOrFailed()
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish PSRule Results - Raw Data"
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/export
+              artifactName: AzureDevOpsRawData
+            condition: succeededOrFailed()
 
           - task: PublishPipelineArtifact@1
             displayName: "Publish PSRule Results - Analysis Reports"
             inputs:
-              targetPath: $(Build.ArtifactStagingDirectory)/export
-              artifactName: PSRuleAnalysisReports
+              targetPath: $(Build.ArtifactStagingDirectory)/analysis
+              artifactName: PSRuleAnalysis
               artifactType: pipeline
             condition: and(succeededOrFailed(), eq(variables['Agent.JobStatus'], 'Succeeded'))

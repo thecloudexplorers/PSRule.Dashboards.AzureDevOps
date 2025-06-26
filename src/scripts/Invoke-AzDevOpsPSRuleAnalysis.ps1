@@ -39,7 +39,11 @@ param (
 
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [System.String]$ReportOutputPath
+    [System.String]$ReportOutputPath,
+
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [System.String]$AnalysisOutputPath,
 )
 
 Begin {
@@ -158,13 +162,13 @@ Process {
     # Run PSRule evaluation with error handling
     try {
         # Ensure the output directory exists
-        if (-not (Test-Path -Path $ReportOutputPath)) {
-            Write-Verbose "Creating output directory: $ReportOutputPath"
-            New-Item -Path $ReportOutputPath -ItemType Directory -Force | Out-Null
+        if (-not (Test-Path -Path $AnalysisOutputPath)) {
+            Write-Verbose "Creating output directory: $AnalysisOutputPath"
+            New-Item -Path $AnalysisOutputPath -ItemType Directory -Force | Out-Null
         }
 
         # Define the output file path
-        $outputFilePath = Join-Path -Path $ReportOutputPath -ChildPath "ps-rule-results.json"
+        $outputFilePath = Join-Path -Path $AnalysisOutputPath -ChildPath "ps-rule-results.json"
         Write-Host "Output file will be saved to: $outputFilePath"
 
         $invokeParams = @{
