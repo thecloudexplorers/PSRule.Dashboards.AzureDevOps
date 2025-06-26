@@ -43,7 +43,7 @@ param (
 
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
-    [System.String]$AnalysisOutputPath,
+    [System.String]$AnalysisOutputPath
 )
 
 Begin {
