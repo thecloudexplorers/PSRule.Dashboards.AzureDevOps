@@ -164,7 +164,7 @@ Process {
         }
 
         # Define the output file path
-        $outputFilePath = Join-Path -Path $ReportOutputPath -ChildPath "ps-rule-results.csv"
+        $outputFilePath = Join-Path -Path $ReportOutputPath -ChildPath "ps-rule-results.json"
         Write-Host "Output file will be saved to: $outputFilePath"
 
         $invokeParams = @{
@@ -174,7 +174,7 @@ Process {
             Culture       = 'en'
             ErrorAction   = 'Continue'
             WarningAction = 'Continue'
-            OutputFormat  = "Csv"
+            OutputFormat  = "Json"
             OutputPath    = $outputFilePath
         }
 
