@@ -157,6 +157,16 @@ Process {
 
     # Run PSRule evaluation with error handling
     try {
+        # Ensure the output directory exists
+        if (-not (Test-Path -Path $ReportOutputPath)) {
+            Write-Verbose "Creating output directory: $ReportOutputPath"
+            New-Item -Path $ReportOutputPath -ItemType Directory -Force | Out-Null
+        }
+
+        # Define the output file path
+        $outputFilePath = Join-Path -Path $ReportOutputPath -ChildPath "ps-rule-results.csv"
+        Write-Host "Output file will be saved to: $outputFilePath"
+
         $invokeParams = @{
             Module        = @('PSRule.Rules.AzureDevOps', 'PSRule.Monitor')
             InputPath     = $jsonFilesGlob
@@ -164,6 +174,8 @@ Process {
             Culture       = 'en'
             ErrorAction   = 'Continue'
             WarningAction = 'Continue'
+            OutputFormat  = "Csv"
+            OutputPath    = $outputFilePath
         }
 
         Write-Host "Running PSRule evaluation..."
@@ -177,11 +189,23 @@ Process {
             return
         }        Write-Host "PSRule evaluation completed successfully. Generated $($result.Count) result(s)."
         Write-Output "##vso[task.setprogress value=80;]Generated $($result.Count) PSRule results"
+
+        # Verify the output file was created
+        if (Test-Path -Path $outputFilePath) {
+            $fileInfo = Get-Item -Path $outputFilePath
+            $fileSizeKB = [math]::Round($fileInfo.Length / 1KB, 2)
+            Write-Host "Output file created successfully: $outputFilePath (Size: $fileSizeKB KB)"
+            Write-Verbose "File creation time: $($fileInfo.CreationTime)"
+        }
+        else {
+            Write-Output "##vso[task.logissue type=warning]Output file not created: $outputFilePath"
+        }
     }
     catch {
         $errorMessage = $_.Exception.Message
         Write-Output "##vso[task.logissue type=error]PSRule evaluation failed with error: $errorMessage"
-        Write-Host "##[warning]PSRule evaluation encountered errors. Some data may not be processed correctly."
+        $warningMsg = "PSRule evaluation encountered errors. Some data may not be processed correctly."
+        Write-Host "##[warning]$warningMsg"
 
         # Try to continue with any partial results
         if ($null -ne $result -and $result.Count -gt 0) {
