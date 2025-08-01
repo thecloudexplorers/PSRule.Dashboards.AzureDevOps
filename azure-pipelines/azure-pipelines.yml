@@ -1,4 +1,4 @@
-name: PSRule-ADO
+name: PSRule.Dashboards.AzureDevOps
 
 variables:
   # Set to your variable group containing variables
@@ -6,8 +6,7 @@ variables:
   - name: reportOutputPath
     value: "$(Build.ArtifactStagingDirectory)/export"
 
-pool:
-  vmImage: "ubuntu-latest"
+trigger: none
 
 schedules:
   - cron: "0 6 * * *"
@@ -15,6 +14,14 @@ schedules:
     branches:
       include:
         - main
+      exclude:
+        - develop
+        - feature/*
+        - users/*
+    always: true
+
+pool:
+  vmImage: "ubuntu-latest"
 
 stages:
   - stage: Run
