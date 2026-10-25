@@ -1,0 +1,63 @@
+name: run-assessment
+trigger: none
+pr: none
+
+schedules:
+  - cron: "0 6 * * *"
+    displayName: Daily assessment at 06:00 UTC
+    branches:
+      include:
+        - main
+    always: true
+
+variables:
+  PSRuleReportReady: 'false'
+
+resources:
+  repositories:
+    - repository: rules
+      type: github
+      endpoint: github.com_wesleycamargo
+      name: wesleycamargo/PSRule.Rules.AzureDevOps
+      ref: refs/heads/main
+
+pool:
+  name: AI-Pool
+
+steps:
+  - checkout: self
+    path: s/dashboards
+  - checkout: rules
+    path: s/rules
+  - task: AzureCLI@2
+    displayName: Assess organization and generate pipeline dashboard
+    inputs:
+      azureSubscription: psrule-azure
+      scriptType: pscore
+      scriptLocation: scriptPath
+      scriptPath: $(Pipeline.Workspace)/s/dashboards/src/scripts/Invoke-PSRuleAssessment.ps1
+      arguments: >-
+        -ModuleManifestPath "$(Pipeline.Workspace)/s/rules/src/PSRule.Rules.AzureDevOps/PSRule.Rules.AzureDevOps.psd1"
+      visibleAzLogin: false
+      useGlobalConfig: false
+  - task: PublishBuildArtifacts@1
+    displayName: Publish PSRule reports
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)/reports
+      ArtifactName: psrule-results
+      publishLocation: Container
+  - task: PublishBuildArtifacts@1
+    displayName: Publish raw Azure DevOps export
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)/raw-export
+      ArtifactName: AzureDevOpsRawData
+      publishLocation: Container
+  - task: PublishHtmlReport@1
+    displayName: Publish PSRule Dashboard tab
+    condition: and(succeededOrFailed(), eq(variables['PSRuleReportReady'], 'true'))
+    inputs:
+      reportDir: $(Build.ArtifactStagingDirectory)/reports/psrule-dashboard.html
+      tabName: PSRule Dashboard
+      useFilenameTabs: false
